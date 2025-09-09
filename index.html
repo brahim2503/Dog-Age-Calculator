@@ -1,0 +1,455 @@
+<!--
+README (top comment block)
+
+Dog Age Calculator - Single-file webpage (HTML + Tailwind + Vanilla JS)
+Author: ChatGPT (frontend dev assistant)
+Purpose: Interactive dog-to-human age converter. Mobile-first, accessible, keyboard-friendly.
+How to use: Open this file in any modern browser. Pick a dog date of birth and size, then click "Calculate Age".
+Tailwind: Loaded from CDN for quick prototyping (cdn.tailwindcss.com). In production, replace with a built Tailwind bundle.
+
+Calculation rules (configurable in JS):
+  - First dog year  => 15 human years
+  - Second dog year => 9 human years
+  - Each additional dog year:
+      - Small dogs  => ~4 human years per dog year
+      - Medium dogs => ~5 human years per dog year
+      - Large dogs  => ~6 human years per dog year
+  These constants are set in the `AGE_RULES` object inside the script and can be adjusted.
+
+Accessibility:
+  - Uses semantic elements and ARIA attributes (aria-label, role, aria-live).
+  - Keyboard accessible: form fields, radio group, and buttons.
+  - Inline error messages are announced to screen readers via aria-live.
+
+Testing note (sample test case included):
+  - Sample test case (static example): DOB=2019-06-15, size=Large
+    - Dog age (calendar) as of 2025-09-09 ≈ 6.22 dog years
+    - Calculation steps (Large): 1st year = 15, 2nd = 9, remainder ≈ 4.22 * 6 ≈ 25.32
+    - Expected human age ≈ 15 + 9 + 25.32 ≈ 49.3 → Displayed as "~49 years"
+    - This test demonstrates algorithm correctness; results will vary depending on current date.
+
+Note: This is a standalone single-file demo. In production, consider serving Tailwind from a proper build pipeline and add unit tests.
+
+-->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dog Age Calculator — Convert Dog Years to Human Years</title>
+  <meta name="description" content="Calculate your dog's age in human years. Different rules for small, medium and large dogs. Accessible, mobile-first UI." />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- Open Graph -->
+  <meta property="og:title" content="Dog Age Calculator" />
+  <meta property="og:description" content="Convert your dog's age to human years using size-based rules. Fast, accessible, and mobile-friendly." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="" />
+  <!-- Tailwind CDN for quick prototype -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* tiny helper to ensure date input width on some mobile browsers */
+    input[type="date"] { min-width: 0; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+  <!-- Header / Navigation -->
+  <header class="bg-white shadow-sm sticky top-0 z-30">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3" aria-label="Dog Age Calculator home">
+        <svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3v18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M5 10c0-4 6-7 7-7s7 3 7 7-3 5-3 8-3 3-4 3-3 0-4-3-4-3-4-8z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <div>
+          <h1 class="text-lg font-semibold leading-none">Dog Age Calculator</h1>
+          <p class="text-xs text-slate-500">Dog → Human years made simple</p>
+        </div>
+      </a>
+
+      <nav role="navigation" aria-label="Main navigation" class="hidden md:flex gap-4">
+        <a href="index.html" class="text-sm font-medium text-amber-600 underline underline-offset-4 px-2 py-1 rounded" aria-current="page">Dog Age</a>
+        <a href="Dog Food Calculator.html" class="text-sm text-slate-600 hover:text-amber-600 px-2 py-1 rounded">Dog Food</a>
+        <a href="About Us.html" class="text-sm text-slate-600 hover:text-amber-600 px-2 py-1 rounded">About</a>
+      </nav>
+
+      <button id="mobile-nav-toggle" class="md:hidden p-2 rounded hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-300" aria-label="Open navigation">
+        <svg class="w-6 h-6 text-slate-700" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+    <!-- Mobile nav -->
+    <div id="mobile-nav" class="md:hidden hidden px-4 pb-4">
+      <nav class="flex flex-col gap-2">
+        <a href="index.html" class="text-amber-600 px-2 py-2 rounded bg-amber-50">Dog Age</a>
+        <a href="Dog Food Calculator.html" class="text-slate-700 px-2 py-2 rounded hover:bg-slate-50">Dog Food</a>
+        <a href="About Us.html" class="text-slate-700 px-2 py-2 rounded hover:bg-slate-50">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <section aria-labelledby="main-heading">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <!-- Left column: info card -->
+        <aside class="md:col-span-1">
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <h2 id="main-heading" class="text-xl font-semibold mb-2">Calculate your dog's age</h2>
+            <p class="text-sm text-slate-600 mb-4">Use the date your dog was born and select their size. Results are approximate and intended to give a realistic estimate of "human equivalent" age.</p>
+            <ul class="text-sm space-y-2">
+              <li>• First year counts more (developmental years)</li>
+              <li>• Size affects later-year scaling</li>
+              <li>• Accessible and keyboard-friendly</li>
+            </ul>
+          </div>
+        </aside>
+
+        <!-- Right column: calculator -->
+        <div class="md:col-span-2">
+          <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
+            <form id="calculator-form" class="space-y-6" role="form" aria-labelledby="calc-heading">
+              <div class="flex items-center justify-between">
+                <h3 id="calc-heading" class="text-lg font-medium">Dog Age Calculator</h3>
+                <div class="text-sm text-slate-500">Quick & approximate</div>
+              </div>
+
+              <!-- Date of birth -->
+              <div>
+                <label for="dob" class="block text-sm font-medium text-slate-700">Date of birth</label>
+                <input
+                  id="dob"
+                  name="dob"
+                  type="date"
+                  aria-label="Dog date of birth"
+                  class="mt-2 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-300"
+                  required
+                />
+                <p id="dob-error" class="mt-1 text-sm text-rose-600" role="alert" aria-live="polite"></p>
+              </div>
+
+              <!-- Size -->
+              <div>
+                <span class="block text-sm font-medium text-slate-700">Size</span>
+                <fieldset id="size-fieldset" class="mt-2 flex gap-3" role="radiogroup" aria-label="Dog size">
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="size" value="small" class="sr-only peer" checked aria-checked="true" />
+                    <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Small</span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="size" value="medium" class="sr-only peer" aria-checked="false" />
+                    <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Medium</span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="size" value="large" class="sr-only peer" aria-checked="false" />
+                    <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Large</span>
+                  </label>
+                </fieldset>
+                <p id="size-error" class="mt-1 text-sm text-rose-600" role="alert" aria-live="polite"></p>
+              </div>
+
+              <!-- Buttons -->
+              <div class="flex flex-col sm:flex-row gap-3">
+                <button
+                  id="calculate-btn"
+                  type="submit"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-amber-600 text-white font-medium hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                >
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Calculate Age
+                </button>
+
+                <button
+                  id="clear-btn"
+                  type="button"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                >
+                  Clear
+                </button>
+              </div>
+
+              <!-- Result card -->
+              <div id="result-card" class="hidden mt-3 bg-amber-50 border border-amber-100 rounded-lg p-4" role="status" aria-live="polite">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <p id="result-dog-age" class="text-sm text-slate-600">Dog age: —</p>
+                    <p id="result-human-age" class="mt-1 text-lg font-semibold text-amber-700">Human age: —</p>
+                    <p id="result-note" class="mt-2 text-xs text-slate-500">Tip: Results are approximate. Adjust rules in script constants if you prefer different scaling.</p>
+                  </div>
+
+                  <div class="flex flex-col items-end gap-2">
+                    <button id="copy-btn" class="px-3 py-2 rounded-md bg-white border border-slate-200 text-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-300" aria-label="Copy result to clipboard">
+                      Copy
+                    </button>
+                    <button id="share-btn" class="px-3 py-2 rounded-md bg-white border border-slate-200 text-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-300" aria-label="Share result">
+                      Share
+                    </button>
+                  </div>
+                </div>
+                <p id="copy-feedback" class="mt-2 text-xs text-slate-600" aria-live="polite"></p>
+              </div>
+
+            </form>
+          </div>
+
+          <!-- Extra: small explanation card -->
+          <div class="mt-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-sm text-slate-600">
+            <strong>How it works:</strong>
+            <p class="mt-2">Puppies mature fast, so the first two dog years count for much more than later years. After that, we apply a per-year multiplier depending on dog size to approximate ongoing aging differences.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="max-w-4xl mx-auto px-4 py-8 text-sm text-slate-500">
+  <div class="border-t border-slate-100 pt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+    <div>Made with ❤️ — For educational/demo use. Not a substitute for veterinary advice.</div>
+    <div class="flex space-x-4">
+        <a href="About Us.html" class="hover:text-slate-700">About</a>
+      <span>|</span>
+      <a href="Terms of Use & Privacy Policy.html" class="hover:text-slate-700">Terms of Use</a>
+      <span>|</span>
+      <a href="Terms of Use & Privacy Policy.html" class="hover:text-slate-700">Privacy Policy</a>
+    </div>
+  </div>
+</footer>
+
+  <!-- JavaScript: functionality & accessibility -->
+  <script>
+    // Constants and configuration for calculation rules
+    // Adjust these values to change how the human-equivalent age is estimated.
+    // AGE_RULES.firstYear = human years for dog's first year
+    // AGE_RULES.secondYear = human years for dog's second year
+    // AGE_RULES.addYears = human years per extra dog year for each size
+    const AGE_RULES = {
+      firstYear: 15,   // 1st dog year ≈ 15 human years
+      secondYear: 9,   // 2nd dog year ≈ 9 human years
+      addYears: {
+        small: 4,      // each dog year after 2 for small dogs ≈ 4 human years
+        medium: 5,     // medium ≈ 5
+        large: 6       // large ≈ 6
+      }
+    };
+
+    // Helper: query selectors
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+    // DOM elements
+    const mobileNavToggle = $('#mobile-nav-toggle');
+    const mobileNav = $('#mobile-nav');
+    const form = $('#calculator-form');
+    const dobInput = $('#dob');
+    const dobError = $('#dob-error');
+    const sizeError = $('#size-error');
+    const resultCard = $('#result-card');
+    const resultDogAge = $('#result-dog-age');
+    const resultHumanAge = $('#result-human-age');
+    const copyBtn = $('#copy-btn');
+    const shareBtn = $('#share-btn');
+    const copyFeedback = $('#copy-feedback');
+    const clearBtn = $('#clear-btn');
+
+    // Toggle mobile nav
+    mobileNavToggle?.addEventListener('click', () => {
+      const visible = !mobileNav.classList.contains('hidden');
+      if (visible) {
+        mobileNav.classList.add('hidden');
+        mobileNavToggle.setAttribute('aria-expanded', 'false');
+      } else {
+        mobileNav.classList.remove('hidden');
+        mobileNavToggle.setAttribute('aria-expanded', 'true');
+      }
+    });
+
+    // Utility: calculate difference in years (as decimal) between two dates
+    // Returns age in dog years as a decimal (e.g., 3.45)
+    function fractionalYearsBetween(fromDate, toDate) {
+      // We'll compute the difference in milliseconds, convert to days, then to years.
+      // This gives an approximate fractional year (accounting for leap years via 365.2425 average).
+      const msPerDay = 1000 * 60 * 60 * 24;
+      const avgDaysPerYear = 365.2425; // accounts for leap years on average
+      const diffMs = toDate - fromDate;
+      const days = diffMs / msPerDay;
+      return days / avgDaysPerYear;
+    }
+
+    // Calculation algorithm:
+    // - If dogAgeYears <= 1: scale proportionally to firstYear
+    // - Else if <= 2: firstYear + (dogAgeYears - 1) * secondYear
+    // - Else: firstYear + secondYear + (dogAgeYears - 2) * addYears[size]
+    // Comments: This is a commonly-used heuristic. Adjust AGE_RULES to tweak behavior.
+    function dogYearsToHuman(dogYears, size) {
+      if (dogYears <= 0) return 0;
+      const first = AGE_RULES.firstYear;
+      const second = AGE_RULES.secondYear;
+      const add = AGE_RULES.addYears[size] ?? AGE_RULES.addYears.medium;
+
+      if (dogYears <= 1) {
+        // Pro-rate the first year's value
+        return dogYears * first;
+      } else if (dogYears <= 2) {
+        // Full first year + proportion of second year
+        return first + (dogYears - 1) * second;
+      } else {
+        // First two years + remaining years scaled by size
+        return first + second + (dogYears - 2) * add;
+      }
+    }
+
+    // Format a fractional age (years as decimal) to "X years Y months"
+    function formatDogAge(yearsDecimal) {
+      const years = Math.floor(yearsDecimal);
+      const months = Math.round((yearsDecimal - years) * 12);
+      if (years <= 0 && months <= 0) return '0 months';
+      if (months === 0) return years + (years === 1 ? ' year' : ' years');
+      if (years === 0) return months + (months === 1 ? ' month' : ' months');
+      return `${years} ${years === 1 ? 'year' : 'years'} ${months} ${months === 1 ? 'month' : 'months'}`;
+    }
+
+    // Input validation
+    function validateInputs(dobValue) {
+      let ok = true;
+      dobError.textContent = '';
+      sizeError.textContent = '';
+
+      if (!dobValue) {
+        dobError.textContent = 'Please enter your dog\'s date of birth.';
+        ok = false;
+      } else {
+        const dob = new Date(dobValue + 'T00:00:00');
+        const today = new Date();
+        if (Number.isNaN(dob.getTime())) {
+          dobError.textContent = 'Invalid date format.';
+          ok = false;
+        } else if (dob > today) {
+          dobError.textContent = 'Date of birth cannot be in the future.';
+          ok = false;
+        } else {
+          // optional: minimum DOB check (e.g., too far in past unlikely)
+          const oldestReasonable = new Date();
+          oldestReasonable.setFullYear(oldestReasonable.getFullYear() - 30); // 30 years ago
+          if (dob < oldestReasonable) {
+            dobError.textContent = 'That date looks very old — please double-check.';
+            // keep ok = true here (just a warning), but if you want to block, set ok = false.
+          }
+        }
+      }
+
+      // Ensure a size is selected (one of the radios)
+      const size = document.querySelector('input[name="size"]:checked');
+      if (!size) {
+        sizeError.textContent = 'Please select a dog size.';
+        ok = false;
+      }
+
+      return ok;
+    }
+
+    // Main calculation handler
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      copyFeedback.textContent = '';
+      resultCard.classList.add('hidden');
+
+      const dobValue = dobInput.value;
+      const valid = validateInputs(dobValue);
+      if (!valid) return;
+
+      const size = (document.querySelector('input[name="size"]:checked') || {}).value || 'medium';
+      const dob = new Date(dobValue + 'T00:00:00');
+      const now = new Date();
+
+      // Compute dog's age in years (fractional)
+      const dogYears = fractionalYearsBetween(dob, now);
+
+      // Convert to human-equivalent using the algorithm
+      const humanYears = dogYearsToHuman(dogYears, size);
+
+      // Build display strings
+      const dogAgeText = `Dog age: ${formatDogAge(dogYears)}`;
+      // Round human years to 1 decimal for display; show approximate tilde
+      const humanRounded = Math.round(humanYears * 10) / 10;
+      const humanText = `Human age: ~${humanRounded} ${humanRounded === 1 ? 'year' : 'years'}`;
+
+      // Update result UI
+      resultDogAge.textContent = dogAgeText;
+      resultHumanAge.textContent = humanText;
+      resultCard.classList.remove('hidden');
+
+      // For screen readers, add a short announcement (aria-live handles it)
+      resultCard.focus?.();
+
+      // Save the last result data-attributes for copy/share
+      resultCard.dataset.result = `${dogAgeText} → ${humanText} (size: ${size})`;
+    });
+
+    // Copy-to-clipboard functionality
+    copyBtn.addEventListener('click', async () => {
+      const text = resultCard.dataset.result || `${resultDogAge.textContent} → ${resultHumanAge.textContent}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        copyFeedback.textContent = 'Result copied to clipboard.';
+      } catch (err) {
+        copyFeedback.textContent = 'Copy failed. You can manually select and copy the text.';
+      }
+    });
+
+    // Simple share handler: use navigator.share if available, otherwise fallback to copying
+    shareBtn.addEventListener('click', async () => {
+      const text = resultCard.dataset.result || `${resultDogAge.textContent} → ${resultHumanAge.textContent}`;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Dog Age Result',
+            text
+          });
+        } catch (err) {
+          copyFeedback.textContent = 'Share canceled or not available.';
+        }
+      } else {
+        try {
+          await navigator.clipboard.writeText(text);
+          copyFeedback.textContent = 'Share not supported — result copied to clipboard.';
+        } catch (err) {
+          copyFeedback.textContent = 'Share not supported and copy failed.';
+        }
+      }
+    });
+
+    // Clear form
+    clearBtn.addEventListener('click', () => {
+      form.reset();
+      dobError.textContent = '';
+      sizeError.textContent = '';
+      resultCard.classList.add('hidden');
+      copyFeedback.textContent = '';
+    });
+
+    // Keyboard accessibility: allow Enter to trigger calculate when focused in size fieldset radios
+    const sizeRadios = $$('input[name="size"]');
+    sizeRadios.forEach(radio => {
+      radio.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          radio.checked = true;
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    });
+
+    // Small enhancement: prefill DOB with a plausible sample (optional)
+    // Uncomment the following line to prefill for demo/testing:
+    // dobInput.value = '2019-06-15';
+
+    // END of script
+  </script>
+</body>
+</html>

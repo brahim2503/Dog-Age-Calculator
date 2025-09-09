@@ -1,0 +1,247 @@
+<!--
+README: Dog Food Calculator - Single-file web page
+Author: ChatGPT (frontend assistant)
+Purpose: Calculate recommended daily dog food based on weight, activity, food type, and age.
+Features:
+  - Mobile-first responsive UI with Tailwind CSS
+  - Accessible and keyboard-friendly
+  - Calculates energy requirement and converts to grams of food
+  - Input validation with inline error messages
+  - Print/save results
+  - Reference table for common dog weights
+Notes:
+  - RER formula: RER = 70 × (weight in kg)^0.75
+  - Energy requirement = RER × activity factor
+  - Activity factors:
+      Puppy: 2.0–3.0, Adult low: 1.2, Moderate: 1.6, Active: 2.0, Senior: 1.4
+  - kcal density defaults: Dry 350 kcal/100g, Wet 100 kcal/100g
+Sample Test Case (for verification):
+  - Dog weight: 10kg, Adult, Moderate activity, Dry food
+  - RER ≈ 70 × 10^0.75 ≈ 394 kcal
+  - MER = 394 × 1.6 ≈ 630 kcal
+  - Food grams = 630 / (350/100) ≈ 180 g/day
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dog Food Calculator — Daily Feeding Recommendation</title>
+  <meta name="description" content="Calculate your dog's daily food requirement based on weight, age, activity, and food type. Get feeding suggestions and sample references.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Open Graph -->
+  <meta property="og:title" content="Dog Food Calculator">
+  <meta property="og:description" content="Calculate daily dog food requirement based on weight, activity, food type, and age.">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+  <!-- Header -->
+ <header class="bg-white shadow-sm sticky top-0 z-30">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3" aria-label="Dog Age Calculator home">
+        <svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3v18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M5 10c0-4 6-7 7-7s7 3 7 7-3 5-3 8-3 3-4 3-3 0-4-3-4-3-4-8z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <div>
+          <h1 class="text-lg font-semibold leading-none">Dog Age Calculator</h1>
+          <p class="text-xs text-slate-500">Dog → Human years made simple</p>
+        </div>
+      </a>
+
+      <nav role="navigation" aria-label="Main navigation" class="hidden md:flex gap-4">
+        <a href="index.html" class="text-sm font-medium text-amber-600 underline underline-offset-4 px-2 py-1 rounded" aria-current="page">Dog Age</a>
+        <a href="Dog Food Calculator.html" class="text-sm text-slate-600 hover:text-amber-600 px-2 py-1 rounded">Dog Food</a>
+        <a href="About Us.html" class="text-sm text-slate-600 hover:text-amber-600 px-2 py-1 rounded">About</a>
+      </nav>
+
+      <button id="mobile-nav-toggle" class="md:hidden p-2 rounded hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-300" aria-label="Open navigation">
+        <svg class="w-6 h-6 text-slate-700" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
+      <form id="food-form" class="space-y-6" aria-labelledby="form-heading">
+        <h2 id="form-heading" class="text-lg font-semibold text-slate-700">Calculate Daily Food Amount</h2>
+
+        <!-- Dog weight -->
+        <div>
+          <label for="weight" class="block text-sm font-medium text-slate-700">Dog weight (kg)</label>
+          <input type="number" id="weight" name="weight" step="0.1" min="0" aria-label="Dog weight in kilograms"
+            class="mt-2 block w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-300" required>
+          <p id="weight-error" class="mt-1 text-sm text-rose-600" role="alert" aria-live="polite"></p>
+        </div>
+
+        <!-- Dog age -->
+        <div>
+          <span class="block text-sm font-medium text-slate-700">Dog age</span>
+          <fieldset class="mt-2 flex gap-3" role="radiogroup" aria-label="Dog age category">
+            <label class="inline-flex items-center cursor-pointer">
+              <input type="radio" name="age" value="puppy" class="sr-only peer" checked aria-checked="true">
+              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Puppy</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+              <input type="radio" name="age" value="adult" class="sr-only peer" aria-checked="false">
+              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Adult</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+              <input type="radio" name="age" value="senior" class="sr-only peer" aria-checked="false">
+              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Senior</span>
+            </label>
+          </fieldset>
+        </div>
+
+        <!-- Activity level -->
+        <div>
+          <span class="block text-sm font-medium text-slate-700">Activity level</span>
+          <fieldset class="mt-2 flex gap-3" role="radiogroup" aria-label="Dog activity level">
+            <label class="inline-flex items-center cursor-pointer">
+              <input type="radio" name="activity" value="low" class="sr-only peer" checked aria-checked="true">
+              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Low</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+              <input type="radio" name="activity" value="moderate" class="sr-only peer" aria-checked="false">
+              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Moderate</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+              <input type="radio" name="activity" value="active" class="sr-only peer" aria-checked="false">
+              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Active</span>
+            </label>
+          </fieldset>
+        </div>
+
+        <!-- Food type -->
+        <div>
+          <span class="block text-sm font-medium text-slate-700">Food type</span>
+          <fieldset class="mt-2 flex gap-3" role="radiogroup" aria-label="Food type">
+            <label class="inline-flex items-center cursor-pointer">
+              <input type="radio" name="foodType" value="dry" class="sr-only peer" checked aria-checked="true">
+              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Dry</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+              <input type="radio" name="foodType" value="wet" class="sr-only peer" aria-checked="false">
+              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Wet</span>
+            </label>
+          </fieldset>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-3 flex-col sm:flex-row">
+          <button type="submit" class="flex-1 px-4 py-2 rounded-lg bg-amber-600 text-white font-medium hover:bg-amber-700 focus:ring-2 focus:ring-amber-300">Calculate</button>
+          <button type="button" id="clear-btn" class="flex-1 px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 focus:ring-2 focus:ring-amber-300">Clear</button>
+        </div>
+
+        <!-- Result -->
+        <div id="result-card" class="hidden mt-4 bg-amber-50 p-4 rounded-lg border border-amber-100" role="status" aria-live="polite">
+          <p id="result-text" class="text-lg font-semibold text-amber-700">Recommended: —</p>
+          <p id="result-note" class="text-sm text-slate-600 mt-1">Split into 2 meals per day</p>
+          <button id="print-btn" class="mt-2 px-3 py-1 rounded border border-slate-300 hover:bg-slate-100 focus:ring-2 focus:ring-amber-300">Print/Save</button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Reference Table -->
+    <div class="mt-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 overflow-x-auto">
+      <h3 class="text-lg font-semibold text-slate-700 mb-4">Reference feeding guide (Adult, Moderate activity, Dry food)</h3>
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr>
+            <th class="border-b border-slate-200 px-3 py-2">Dog weight (kg)</th>
+            <th class="border-b border-slate-200 px-3 py-2">Daily food (g)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="border-b border-slate-100 px-3 py-2">5</td><td class="border-b border-slate-100 px-3 py-2">90–100</td></tr>
+          <tr><td class="border-b border-slate-100 px-3 py-2">10</td><td class="border-b border-slate-100 px-3 py-2">180–200</td></tr>
+          <tr><td class="border-b border-slate-100 px-3 py-2">20</td><td class="border-b border-slate-100 px-3 py-2">360–400</td></tr>
+          <tr><td class="border-b border-slate-100 px-3 py-2">30</td><td class="border-b border-slate-100 px-3 py-2">520–580</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Footer -->
+   <footer class="max-w-4xl mx-auto px-4 py-8 text-sm text-slate-500">
+  <div class="border-t border-slate-100 pt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+    <div>Made with ❤️ — For educational/demo use. Not a substitute for veterinary advice.</div>
+    <div class="flex space-x-4">
+        <a href="About Us.html" class="hover:text-slate-700">About</a>
+      <span>|</span>
+      <a href="Terms of Use & Privacy Policy.html" class="hover:text-slate-700">Terms of Use</a>
+      <span>|</span>
+      <a href="Terms of Use & Privacy Policy.html" class="hover:text-slate-700">Privacy Policy</a>
+    </div>
+  </div>
+</footer>
+
+  <script>
+    // Default kcal per 100g
+    const FOOD_KCAL = { dry: 350, wet: 100 };
+
+    // Activity factor table by age/activity
+    const ACTIVITY_FACTORS = {
+      puppy: 2.5, // average puppy factor
+      adult: { low: 1.2, moderate: 1.6, active: 2.0 },
+      senior: 1.4
+    };
+
+    const form = document.getElementById('food-form');
+    const resultCard = document.getElementById('result-card');
+    const resultText = document.getElementById('result-text');
+    const weightInput = document.getElementById('weight');
+    const weightError = document.getElementById('weight-error');
+    const clearBtn = document.getElementById('clear-btn');
+    const printBtn = document.getElementById('print-btn');
+
+    function calculateRER(weightKg) {
+      return 70 * Math.pow(weightKg, 0.75);
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      weightError.textContent = '';
+      resultCard.classList.add('hidden');
+
+      const weight = parseFloat(weightInput.value);
+      if (isNaN(weight) || weight <= 0) {
+        weightError.textContent = 'Please enter a valid weight greater than 0.';
+        return;
+      }
+
+      const age = form.age.value;
+      const activity = form.activity.value;
+      const foodType = form.foodType.value;
+
+      let activityFactor = 1.0;
+      if (age === 'puppy') activityFactor = ACTIVITY_FACTORS.puppy;
+      else if (age === 'senior') activityFactor = ACTIVITY_FACTORS.senior;
+      else activityFactor = ACTIVITY_FACTORS.adult[activity] ?? 1.6;
+
+      const rer = calculateRER(weight);
+      const mer = rer * activityFactor;
+
+      const gramsPer100kcal = FOOD_KCAL[foodType];
+      const foodGrams = (mer / gramsPer100kcal) * 100;
+
+      resultText.textContent = `Recommended: ${Math.round(foodGrams)} g/day`;
+      resultCard.classList.remove('hidden');
+    });
+
+    clearBtn.addEventListener('click', () => {
+      form.reset();
+      weightError.textContent = '';
+      resultCard.classList.add('hidden');
+    });
+
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  </script>
+</body>
+</html>
