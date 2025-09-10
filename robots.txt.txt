@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://brahim2503.github.io/Dog-Age-Calculator/sitemap.xml
