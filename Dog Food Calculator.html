@@ -1,261 +1,873 @@
-<!--
-README: Dog Food Calculator - Single-file web page
-Author: ChatGPT (frontend assistant)
-Purpose: Calculate recommended daily dog food based on weight, activity, food type, and age.
-Features:
-  - Mobile-first responsive UI with Tailwind CSS
-  - Accessible and keyboard-friendly
-  - Calculates energy requirement and converts to grams of food
-  - Input validation with inline error messages
-  - Print/save results
-  - Reference table for common dog weights
-Notes:
-  - RER formula: RER = 70 × (weight in kg)^0.75
-  - Energy requirement = RER × activity factor
-  - Activity factors:
-      Puppy: 2.0–3.0, Adult low: 1.2, Moderate: 1.6, Active: 2.0, Senior: 1.4
-  - kcal density defaults: Dry 350 kcal/100g, Wet 100 kcal/100g
-Sample Test Case (for verification):
-  - Dog weight: 10kg, Adult, Moderate activity, Dry food
-  - RER ≈ 70 × 10^0.75 ≈ 394 kcal
-  - MER = 394 × 1.6 ≈ 630 kcal
-  - Food grams = 630 / (350/100) ≈ 180 g/day
--->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Dog Food Calculator — Daily Feeding Recommendation</title>
-  <meta name="description" content="Calculate your dog's daily food requirement based on weight, age, activity, and food type. Get feeding suggestions and sample references.">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="RjZOdeoQkL_lAnf3zG3mtVWOUvKc_FYmV779KiwXJ0k" />
+  <meta charset="utf-8" />
+  <title>Dog Food Calculator - Calculate Daily Food Requirements</title>
+  <meta name="description" content="Calculate your dog's daily food requirements with our free Dog Food Calculator. Get accurate portions based on weight, age, activity level, and food type." />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <!-- Open Graph -->
-  <meta property="og:title" content="Dog Food Calculator">
-  <meta property="og:description" content="Calculate daily dog food requirement based on weight, activity, food type, and age.">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-3YDMB4JY02"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-3YDMB4JY02');
-</script>
-
-  </head>
+  <meta property="og:title" content="Dog Food Calculator" />
+  <meta property="og:description" content="Calculate optimal daily food portions for your dog based on weight, age, and activity level." />
+  <meta property="og:type" content="website" />
+  <meta name="google-site-verification" content="RjZOdeoQkL_lAnf3zG3mtVWOUvKc_FYmV779KiwXJ0k" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3YDMB4JY02"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-3YDMB4JY02');
+  </script>
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
 <body class="bg-slate-50 text-slate-800 antialiased">
-
-  <!-- Header -->
- <header class="bg-white shadow-sm sticky top-0 z-30">
+  <!-- Header / Navigation -->
+  <header class="bg-white shadow-sm sticky top-0 z-30">
     <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="#" class="flex items-center gap-3" aria-label="Dog Age Calculator home">
-        <svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M12 3v18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-          <path d="M5 10c0-4 6-7 7-7s7 3 7 7-3 5-3 8-3 3-4 3-3 0-4-3-4-3-4-8z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
+      <a href="https://brahim2503.github.io/Dog-Age-Calculator/index.html" class="flex items-center gap-3" aria-label="Dog calculators home">
+        <svg class="w-8 h-8 text-green-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M3 12h18l-1.68 7.44a1 1 0 01-.98.81H5.66a1 1 0 01-.98-.81L3 12z"/>
+          <path d="M12 2v10"/>
+          <path d="M8 8h8"/>
         </svg>
         <div>
-          <h1 class="text-lg font-semibold leading-none">Dog Age Calculator</h1>
-          <p class="text-xs text-slate-500">Dog → Human years made simple</p>
+          <h1 class="text-lg font-semibold leading-none">Dog Food Calculator</h1>
+          <p class="text-xs text-slate-500">Optimal nutrition made simple</p>
         </div>
       </a>
 
       <nav role="navigation" aria-label="Main navigation" class="hidden md:flex gap-4">
-        <a href="index.html" class="text-sm font-medium text-amber-600 underline underline-offset-4 px-2 py-1 rounded" aria-current="page">Dog Age</a>
-        <a href="Dog Food Calculator.html" class="text-sm text-slate-600 hover:text-amber-600 px-2 py-1 rounded">Dog Food</a>
-        <a href="About Us.html" class="text-sm text-slate-600 hover:text-amber-600 px-2 py-1 rounded">About</a>
+        <a href="https://brahim2503.github.io/Dog-Age-Calculator/index.html" class="flex items-center gap-2 text-sm text-slate-600 hover:text-green-600 px-2 py-1 rounded">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
+            <line x1="8" x2="16" y1="6" y2="6"/>
+            <line x1="8" x2="16" y1="10" y2="10"/>
+            <line x1="8" x2="16" y1="14" y2="14"/>
+            <line x1="8" x2="16" y1="18" y2="18"/>
+          </svg>
+          Dog Age Calculator
+        </a>
+        <a href="#" class="flex items-center gap-2 text-sm font-medium text-green-600 underline underline-offset-4 px-2 py-1 rounded" aria-current="page">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 12h18l-1.68 7.44a1 1 0 01-.98.81H5.66a1 1 0 01-.98-.81L3 12z"/>
+            <path d="M12 2v10"/>
+            <path d="M8 8h8"/>
+          </svg>
+          Dog Food Calculator
+        </a>
+        <a href="About Us.html" class="flex items-center gap-2 text-sm text-slate-600 hover:text-green-600 px-2 py-1 rounded">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          About
+        </a>
       </nav>
 
-      <button id="mobile-nav-toggle" class="md:hidden p-2 rounded hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-300" aria-label="Open navigation">
+      <button id="mobile-nav-toggle" class="md:hidden p-2 rounded hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-green-300" aria-label="Open navigation">
         <svg class="w-6 h-6 text-slate-700" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+          <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </button>
+    </div>
+
+    <!-- Mobile nav -->
+    <div id="mobile-nav" class="md:hidden hidden px-4 pb-4">
+      <nav class="flex flex-col gap-2">
+        <a href="https://brahim2503.github.io/Dog-Age-Calculator/index.html" class="flex items-center gap-2 text-slate-700 px-2 py-2 rounded hover:bg-slate-50">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
+            <line x1="8" x2="16" y1="6" y2="6"/>
+            <line x1="8" x2="16" y1="10" y2="10"/>
+            <line x1="8" x2="16" y1="14" y2="14"/>
+            <line x1="8" x2="16" y1="18" y2="18"/>
+          </svg>
+          Dog Age Calculator
+        </a>
+        <a href="#" class="flex items-center gap-2 text-green-600 px-2 py-2 rounded bg-green-50">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 12h18l-1.68 7.44a1 1 0 01-.98.81H5.66a1 1 0 01-.98-.81L3 12z"/>
+            <path d="M12 2v10"/>
+            <path d="M8 8h8"/>
+          </svg>
+          Dog Food Calculator
+        </a>
+        <a href="About Us.html" class="flex items-center gap-2 text-slate-700 px-2 py-2 rounded hover:bg-slate-50">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          About
+        </a>
+      </nav>
     </div>
   </header>
 
   <!-- Main content -->
   <main class="max-w-4xl mx-auto px-4 py-8">
-    <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
-      <form id="food-form" class="space-y-6" aria-labelledby="form-heading">
-        <h2 id="form-heading" class="text-lg font-semibold text-slate-700">Calculate Daily Food Amount</h2>
+    <section aria-labelledby="main-heading">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <!-- Left column: info card -->
+        <aside class="md:col-span-1">
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex items-center gap-3 mb-4">
+              <svg class="w-6 h-6 text-green-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M3 12h18l-1.68 7.44a1 1 0 01-.98.81H5.66a1 1 0 01-.98-.81L3 12z"/>
+                <path d="M12 2v10"/>
+                <path d="M8 8h8"/>
+              </svg>
+              <h2 id="main-heading" class="text-xl font-semibold">Calculate food portions</h2>
+            </div>
+            <p class="text-sm text-slate-600 mb-4">Proper nutrition is essential for your dog's health and longevity. Our Dog Food Calculator helps you determine the right amount of food based on your dog's weight, age, activity level, and food type. Avoid overfeeding or underfeeding by getting personalized recommendations.</p>
+            <ul class="text-sm space-y-2">
+              <li class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-green-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                Based on scientific feeding guidelines
+              </li>
+              <li class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                </svg>
+                Adjusts for different food types
+              </li>
+              <li class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-purple-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 1v6m0 6v6"/>
+                  <path d="M21 12h-6m-6 0H3"/>
+                </svg>
+                Considers activity level and life stage
+              </li>
+            </ul>
+            
+            <!-- Internal Links Section -->
+            <div class="mt-4 pt-4 border-t border-slate-100">
+              <h3 class="text-sm font-medium text-slate-700 mb-2">Related Tools</h3>
+              <div class="space-y-2">
+                <a href="https://brahim2503.github.io/Dog-Age-Calculator/index.html" 
+                   class="flex items-center gap-2 text-sm text-green-600 hover:text-green-700">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
+                    <line x1="8" x2="16" y1="6" y2="6"/>
+                  </svg>
+                  Calculate Your Dog's Age
+                </a>
+                <a href="About Us.html" 
+                   class="flex items-center gap-2 text-sm text-slate-600 hover:text-green-600">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="m9 12 2 2 4-4"/>
+                  </svg>
+                  Learn About Pet Nutrition
+                </a>
+              </div>
+            </div>
+          </div>
+        </aside>
 
-        <!-- Dog weight -->
-        <div>
-          <label for="weight" class="block text-sm font-medium text-slate-700">Dog weight (kg)</label>
-          <input type="number" id="weight" name="weight" step="0.1" min="0" aria-label="Dog weight in kilograms"
-            class="mt-2 block w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-300" required>
-          <p id="weight-error" class="mt-1 text-sm text-rose-600" role="alert" aria-live="polite"></p>
+        <!-- Right column: calculator -->
+        <div class="md:col-span-2">
+          <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
+            <form id="calculator-form" class="space-y-6" role="form" aria-labelledby="calc-heading">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M3 12h18l-1.68 7.44a1 1 0 01-.98.81H5.66a1 1 0 01-.98-.81L3 12z"/>
+                    <path d="M12 2v10"/>
+                    <path d="M8 8h8"/>
+                  </svg>
+                  <h3 id="calc-heading" class="text-lg font-medium">Food Calculator</h3>
+                </div>
+                <div class="flex items-center gap-1 text-sm text-slate-500">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12,6 12,12 16,14"/>
+                  </svg>
+                  Professional estimates
+                </div>
+              </div>
+
+              <!-- Dog Weight -->
+              <div>
+                <label for="weight" class="flex items-center gap-2 text-sm font-medium text-slate-700">
+                  <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M12 3v18m-4-4h8"/>
+                  </svg>
+                  Dog's Current Weight
+                </label>
+                <div class="mt-2 flex gap-2">
+                  <input
+                    id="weight"
+                    name="weight"
+                    type="number"
+                    min="1"
+                    max="200"
+                    step="0.5"
+                    placeholder="25"
+                    aria-label="Dog weight"
+                    class="flex-1 px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-300"
+                    required
+                  />
+                  <select id="weight-unit" name="weight-unit" class="px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-300">
+                    <option value="lbs">lbs</option>
+                    <option value="kg">kg</option>
+                  </select>
+                </div>
+                <p id="weight-error" class="mt-1 text-sm text-rose-600" role="alert" aria-live="polite"></p>
+              </div>
+
+              <!-- Age Group -->
+              <div>
+                <span class="flex items-center gap-2 text-sm font-medium text-slate-700">
+                  <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12,6 12,12 16,14"/>
+                  </svg>
+                  Life Stage
+                </span>
+                <fieldset id="age-fieldset" class="mt-2 grid grid-cols-2 gap-3" role="radiogroup" aria-label="Dog life stage">
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="age-group" value="puppy" class="sr-only peer" checked aria-checked="true" />
+                    <span class="flex items-center gap-2 px-3 py-2 rounded-lg border peer-checked:bg-green-50 peer-checked:border-green-300 peer-checked:text-green-700 text-sm">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="2"/>
+                      </svg>
+                      Puppy (2-12 months)
+                    </span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="age-group" value="adult" class="sr-only peer" aria-checked="false" />
+                    <span class="flex items-center gap-2 px-3 py-2 rounded-lg border peer-checked:bg-green-50 peer-checked:border-green-300 peer-checked:text-green-700 text-sm">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="4"/>
+                      </svg>
+                      Adult (1-7 years)
+                    </span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="age-group" value="senior" class="sr-only peer" aria-checked="false" />
+                    <span class="flex items-center gap-2 px-3 py-2 rounded-lg border peer-checked:bg-green-50 peer-checked:border-green-300 peer-checked:text-green-700 text-sm">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="6"/>
+                      </svg>
+                      Senior (7+ years)
+                    </span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="age-group" value="pregnant" class="sr-only peer" aria-checked="false" />
+                    <span class="flex items-center gap-2 px-3 py-2 rounded-lg border peer-checked:bg-green-50 peer-checked:border-green-300 peer-checked:text-green-700 text-sm">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M21 8.5c0-2.485-2.239-4.5-5-4.5-1.664 0-3.13.781-4 2.009C11.13 4.781 9.664 4 8 4 5.239 4 3 6.015 3 8.5c0 3.398 3.25 6.212 9 11.5 5.75-5.288 9-8.102 9-11.5z"/>
+                      </svg>
+                      Pregnant/Nursing
+                    </span>
+                  </label>
+                </fieldset>
+                <p id="age-error" class="mt-1 text-sm text-rose-600" role="alert" aria-live="polite"></p>
+              </div>
+
+              <!-- Activity Level -->
+              <div>
+                <span class="flex items-center gap-2 text-sm font-medium text-slate-700">
+                  <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                  </svg>
+                  Activity Level
+                </span>
+                <fieldset id="activity-fieldset" class="mt-2 flex gap-3" role="radiogroup" aria-label="Dog activity level">
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="activity" value="low" class="sr-only peer" checked aria-checked="true" />
+                    <span class="flex items-center gap-2 px-3 py-2 rounded-lg border peer-checked:bg-green-50 peer-checked:border-green-300 peer-checked:text-green-700 text-sm">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      Low
+                    </span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="activity" value="moderate" class="sr-only peer" aria-checked="false" />
+                    <span class="flex items-center gap-2 px-3 py-2 rounded-lg border peer-checked:bg-green-50 peer-checked:border-green-300 peer-checked:text-green-700 text-sm">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="5"/>
+                      </svg>
+                      Moderate
+                    </span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="activity" value="high" class="sr-only peer" aria-checked="false" />
+                    <span class="flex items-center gap-2 px-3 py-2 rounded-lg border peer-checked:bg-green-50 peer-checked:border-green-300 peer-checked:text-green-700 text-sm">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="8"/>
+                      </svg>
+                      High
+                    </span>
+                  </label>
+                </fieldset>
+                <p id="activity-error" class="mt-1 text-sm text-rose-600" role="alert" aria-live="polite"></p>
+              </div>
+
+              <!-- Food Type -->
+              <div>
+                <label for="food-type" class="flex items-center gap-2 text-sm font-medium text-slate-700">
+                  <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M3 12h18l-1.68 7.44a1 1 0 01-.98.81H5.66a1 1 0 01-.98-.81L3 12z"/>
+                    <path d="M12 2v10"/>
+                  </svg>
+                  Food Type
+                </label>
+                <select
+                  id="food-type"
+                  name="food-type"
+                  class="mt-2 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-300"
+                  required
+                >
+                  <option value="dry">Dry Kibble (300-400 kcal/cup)</option>
+                  <option value="wet">Wet/Canned (70-100 kcal/100g)</option>
+                  <option value="semi-moist">Semi-Moist (250-350 kcal/cup)</option>
+                  <option value="raw">Raw Diet (130-200 kcal/100g)</option>
+                </select>
+                <p id="food-type-error" class="mt-1 text-sm text-rose-600" role="alert" aria-live="polite"></p>
+              </div>
+
+              <!-- Buttons -->
+              <div class="flex flex-col sm:flex-row gap-3">
+                <button
+                  id="calculate-btn"
+                  type="submit"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
+                >
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M3 12h18l-1.68 7.44a1 1 0 01-.98.81H5.66a1 1 0 01-.98-.81L3 12z"/>
+                    <path d="M12 2v10"/>
+                  </svg>
+                  Calculate Food Amount
+                </button>
+
+                <button
+                  id="clear-btn"
+                  type="button"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-green-300"
+                >
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/>
+                    <path d="M21 3v5h-5"/>
+                    <path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"/>
+                    <path d="M3 21v-5h5"/>
+                  </svg>
+                  Clear
+                </button>
+              </div>
+
+              <!-- Result card -->
+              <div id="result-card" class="hidden mt-3 bg-green-50 border border-green-100 rounded-lg p-4" role="status" aria-live="polite">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                      <svg class="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M3 12h18l-1.68 7.44a1 1 0 01-.98.81H5.66a1 1 0 01-.98-.81L3 12z"/>
+                        <path d="M12 2v10"/>
+                      </svg>
+                      <h4 class="text-lg font-semibold text-green-700">Daily Food Requirement</h4>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                      <p id="result-amount" class="text-sm text-slate-600">Amount: —</p>
+                      <p id="result-calories" class="text-sm text-slate-600">Daily calories: —</p>
+                      <p id="result-meals" class="text-sm text-slate-600">Feeding schedule: —</p>
+                    </div>
+                    <div class="flex items-start gap-2">
+                      <svg class="w-3 h-3 text-slate-400 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="m9 12 2 2 4-4"/>
+                      </svg>
+                      <p id="result-note" class="text-xs text-slate-500">Monitor your dog's weight and adjust portions as needed. Consult your vet for specific dietary requirements.</p>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col items-end gap-2">
+                    <button id="copy-btn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white border border-slate-200 text-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-green-300" aria-label="Copy result to clipboard">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                      </svg>
+                      Copy
+                    </button>
+                    <button id="share-btn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white border border-slate-200 text-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-green-300" aria-label="Share result">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                        <polyline points="16,6 12,2 8,6"/>
+                        <line x1="12" x2="12" y1="2" y2="15"/>
+                      </svg>
+                      Share
+                    </button>
+                  </div>
+                </div>
+                <p id="copy-feedback" class="mt-2 text-xs text-slate-600" aria-live="polite"></p>
+              </div>
+
+            </form>
+          </div>
+
+          <!-- Extra: feeding guidelines card -->
+          <div class="mt-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-sm text-slate-600">
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+                <path d="M12 17h.01"/>
+              </svg>
+              <strong>Feeding Guidelines & Tips</strong>
+            </div>
+            <p class="mt-2">Proper feeding is crucial for your dog's health and well-being. The amount of food your dog needs depends on several factors including weight, age, activity level, and the type of food you're using. Puppies require more calories per pound than adult dogs because they're growing rapidly. Senior dogs may need fewer calories if they're less active. Active working dogs or highly energetic breeds need more food than couch potato dogs. Always transition to new foods gradually over 7-10 days to avoid digestive upset. Monitor your dog's body condition - you should be able to feel their ribs without pressing hard, but not see them prominently. Divide daily food into 2-3 meals for adult dogs, or 3-4 meals for puppies. Fresh water should always be available. Remember to account for treats in your dog's daily caloric intake - treats should make up no more than 10% of daily calories. If your dog is overweight or underweight, consult your veterinarian for a tailored feeding plan. For accurate portions, use our <a href="https://brahim2503.github.io/Dog-Age-Calculator/Dog%20Food%20Calculator.html" class="text-green-600 hover:text-green-700 underline">dog food calculator</a> and complement it with our <a href="https://brahim2503.github.io/Dog-Age-Calculator/index.html" class="text-green-600 hover:text-green-700 underline">dog age calculator</a> to understand your pet's life stage better.</p>
+          </div>
+
         </div>
+      </div>
+    </section>
 
-        <!-- Dog age -->
-        <div>
-          <span class="block text-sm font-medium text-slate-700">Dog age</span>
-          <fieldset class="mt-2 flex gap-3" role="radiogroup" aria-label="Dog age category">
-            <label class="inline-flex items-center cursor-pointer">
-              <input type="radio" name="age" value="puppy" class="sr-only peer" checked aria-checked="true">
-              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Puppy</span>
-            </label>
-            <label class="inline-flex items-center cursor-pointer">
-              <input type="radio" name="age" value="adult" class="sr-only peer" aria-checked="false">
-              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Adult</span>
-            </label>
-            <label class="inline-flex items-center cursor-pointer">
-              <input type="radio" name="age" value="senior" class="sr-only peer" aria-checked="false">
-              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Senior</span>
-            </label>
-          </fieldset>
-        </div>
+    <!-- FAQ Section -->
+    <section class="mt-12 bg-white p-8 rounded-2xl shadow-sm border border-slate-100" aria-labelledby="faq-heading">
+      <div class="mb-6">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNjQwIj4KICA8IS0tIERvZyBib3dsIC0tPgogIDxyZWN0IHg9IjIwMCIgeT0iNDAwIiB3aWR0aD0iMjQwIiBoZWlnaHQ9IjEwMCIgcng9IjIwIiBmaWxsPSIjRjU5QzQxIi8+CiAgPCEtLSBGb29kIC0tPgogIDxjaXJjbGUgY3g9IjI0MCIgY3k9IjQyMCIgcj0iMTAiIGZpbGw9IiNGRkQ3MDAiLz4KICA8Y2lyY2xlIGN4PSIyODAiIGN5PSI0MzAiIHI9IjgiIGZpbGw9IiNGRkQ3MDAiLz4KICA8Y2lyY2xlIGN4PSIzMjAiIGN5PSI0MjAiIHI9IjkiIGZpbGw9IiNGRkQ3MDAiLz4KICA8Y2lyY2xlIGN4PSIzNjAiIGN5PSI0MzUiIHI9IjciIGZpbGw9IiNGRkQ3MDAiLz4KICA8Y2lyY2xlIGN4PSI0MDAiIGN5PSI0MjUiIHI9IjExIiBmaWxsPSIjRkZENzAwIi8+CiAgPCEtLSBCb3dsIGhpZ2hsaWdodCAtLT4KICA8ZWxsaXBzZSBjeD0iMjQwIiBjeT0iMzkwIiByeD0iMjAiIHJ5PSI4IiBmaWxsPSIjRkZCRDY2IiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIERvZyBoZWFkIC0tPgogIDxlbGxpcHNlIGN4PSI0NDAiIGN5PSIyNzAiIHJ4PSI5MCIgcnk9IjgwIiBmaWxsPSIjOEI1Q0YxIi8+CiAgPCEtLSBEb2cgZWFycyAtLT4KICA8ZWxsaXBzZSBjeD0iMzgwIiBjeT0iMjIwIiByeD0iMzAiIHJ5PSI1MCIgdHJhbnNmb3JtPSJyb3RhdGUoLTIwIDM4MCAyMjApIiBmaWxsPSIjOEI1Q0YxIi8+CiAgPGVsbGlwc2UgY3g9IjUwMCIgY3k9IjIyMCIgcng9IjMwIiByeT0iNTAiIHRyYW5zZm9ybT0icm90YXRlKDIwIDUwMCAyMjApIiBmaWxsPSIjOEI1Q0YxIi8+CiAgPCEtLSBEb2cgZXllcyAtLT4KICA8Y2lyY2xlIGN4PSI0MjAiIGN5PSIyNjAiIHI9IjgiIGZpbGw9IiMzNzQxNTEiLz4KICA8Y2lyY2xlIGN4PSI0NjAiIGN5PSIyNjAiIHI9IjgiIGZpbGw9IiMzNzQxNTEiLz4KICA8IS0tIERvZyBub3NlIC0tPgogIDxlbGxpcHNlIGN4PSI0NDAiIGN5PSIyOTAiIHJ4PSI2IiByeT0iNCIgZmlsbD0iIzM3NDE1MSIvPgogIDwhLS0gRG9nIG1vdXRoIC0tPgogIDxwYXRoIGQ9Ik00MjAgMzEwIFE0NDAgMzIwIDQ2MCAzMTAiIHN0cm9rZT0iIzM3NDE1MSIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+CiAgPCEtLSBIYXBweSwgaHVuZ3J5IGV4cHJlc3Npb24gLS0+CiAgPGVsbGlwc2UgY3g9IjQ0MCIgY3k9IjMzMCIgcng9IjgiIHJ5PSI1IiBmaWxsPSIjRUY0NDQ0Ii8+Cjwvc3ZnPgo=" 
+     alt="Happy dog with food bowl" 
+     class="w-full h-24 object-contain rounded-lg bg-gradient-to-br from-green-50 to-blue-100" 
+     loading="lazy" />
+      </div>
 
-        <!-- Activity level -->
-        <div>
-          <span class="block text-sm font-medium text-slate-700">Activity level</span>
-          <fieldset class="mt-2 flex gap-3" role="radiogroup" aria-label="Dog activity level">
-            <label class="inline-flex items-center cursor-pointer">
-              <input type="radio" name="activity" value="low" class="sr-only peer" checked aria-checked="true">
-              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Low</span>
-            </label>
-            <label class="inline-flex items-center cursor-pointer">
-              <input type="radio" name="activity" value="moderate" class="sr-only peer" aria-checked="false">
-              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Moderate</span>
-            </label>
-            <label class="inline-flex items-center cursor-pointer">
-              <input type="radio" name="activity" value="active" class="sr-only peer" aria-checked="false">
-              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Active</span>
-            </label>
-          </fieldset>
-        </div>
+      <div class="flex items-center gap-3 mb-6">
+        <svg class="w-8 h-8 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+          <path d="M12 17h.01"/>
+        </svg>
+        <h2 id="faq-heading" class="text-2xl font-bold text-slate-800">Dog Nutrition FAQ</h2>
+      </div>
 
-        <!-- Food type -->
-        <div>
-          <span class="block text-sm font-medium text-slate-700">Food type</span>
-          <fieldset class="mt-2 flex gap-3" role="radiogroup" aria-label="Food type">
-            <label class="inline-flex items-center cursor-pointer">
-              <input type="radio" name="foodType" value="dry" class="sr-only peer" checked aria-checked="true">
-              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Dry</span>
-            </label>
-            <label class="inline-flex items-center cursor-pointer">
-              <input type="radio" name="foodType" value="wet" class="sr-only peer" aria-checked="false">
-              <span class="px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700">Wet</span>
-            </label>
-          </fieldset>
-        </div>
+      <div class="space-y-4">
+        <details class="group bg-slate-50 rounded-lg">
+          <summary class="flex items-center justify-between w-full p-4 cursor-pointer text-left font-medium text-slate-700 hover:text-green-600">
+            <span>🍖 How often should I feed my dog?</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-slate-600">
+            <p>Adult dogs should be fed twice daily (morning and evening), while puppies under 6 months need 3-4 meals per day. Senior dogs may benefit from smaller, more frequent meals. Consistent meal times help with digestion and house training. Avoid feeding right before or after vigorous exercise to prevent bloat.</p>
+          </div>
+        </details>
 
-        <!-- Buttons -->
-        <div class="flex gap-3 flex-col sm:flex-row">
-          <button type="submit" class="flex-1 px-4 py-2 rounded-lg bg-amber-600 text-white font-medium hover:bg-amber-700 focus:ring-2 focus:ring-amber-300">Calculate</button>
-          <button type="button" id="clear-btn" class="flex-1 px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 focus:ring-2 focus:ring-amber-300">Clear</button>
-        </div>
+        <details class="group bg-slate-50 rounded-lg">
+          <summary class="flex items-center justify-between w-full p-4 cursor-pointer text-left font-medium text-slate-700 hover:text-green-600">
+            <span>📏 How do I know if I'm feeding the right amount?</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-slate-600">
+            <p>Monitor your dog's body condition score. You should be able to feel their ribs easily without pressing hard, but not see them prominently. There should be a visible waist when viewed from above. If your dog is gaining or losing weight unexpectedly, adjust portions by 10-15% and monitor for 2-3 weeks.</p>
+          </div>
+        </details>
 
-        <!-- Result -->
-        <div id="result-card" class="hidden mt-4 bg-amber-50 p-4 rounded-lg border border-amber-100" role="status" aria-live="polite">
-          <p id="result-text" class="text-lg font-semibold text-amber-700">Recommended: —</p>
-          <p id="result-note" class="text-sm text-slate-600 mt-1">Split into 2 meals per day</p>
-          <button id="print-btn" class="mt-2 px-3 py-1 rounded border border-slate-300 hover:bg-slate-100 focus:ring-2 focus:ring-amber-300">Print/Save</button>
-        </div>
+        <details class="group bg-slate-50 rounded-lg">
+          <summary class="flex items-center justify-between w-full p-4 cursor-pointer text-left font-medium text-slate-700 hover:text-green-600">
+            <span>🥘 What's the difference between wet and dry food portions?</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-slate-600">
+            <p>Wet food contains 70-80% water, so you need much larger volumes compared to dry kibble. Dry food is more calorie-dense (300-400 kcal per cup) while wet food has fewer calories per weight (70-100 kcal per 100g). Always follow the feeding guidelines on your specific food package and adjust based on your dog's needs.</p>
+          </div>
+        </details>
 
-      </form>
-    </div>
+        <details class="group bg-slate-50 rounded-lg">
+          <summary class="flex items-center justify-between w-full p-4 cursor-pointer text-left font-medium text-slate-700 hover:text-green-600">
+            <span>🎂 Do feeding requirements change with age?</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-slate-600">
+            <p>Yes, significantly. Puppies need 2-3 times more calories per pound than adult dogs due to rapid growth. Adult dogs have stable requirements based on activity level. Senior dogs often need fewer calories due to reduced activity but may benefit from easily digestible, nutrient-rich foods. Pregnant and nursing females need 25-50% more calories.</p>
+          </div>
+        </details>
 
-    <!-- Reference Table -->
-    <div class="mt-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 overflow-x-auto">
-      <h3 class="text-lg font-semibold text-slate-700 mb-4">Reference feeding guide (Adult, Moderate activity, Dry food)</h3>
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr>
-            <th class="border-b border-slate-200 px-3 py-2">Dog weight (kg)</th>
-            <th class="border-b border-slate-200 px-3 py-2">Daily food (g)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td class="border-b border-slate-100 px-3 py-2">5</td><td class="border-b border-slate-100 px-3 py-2">90–100</td></tr>
-          <tr><td class="border-b border-slate-100 px-3 py-2">10</td><td class="border-b border-slate-100 px-3 py-2">180–200</td></tr>
-          <tr><td class="border-b border-slate-100 px-3 py-2">20</td><td class="border-b border-slate-100 px-3 py-2">360–400</td></tr>
-          <tr><td class="border-b border-slate-100 px-3 py-2">30</td><td class="border-b border-slate-100 px-3 py-2">520–580</td></tr>
-        </tbody>
-      </table>
-    </div>
+        <details class="group bg-slate-50 rounded-lg">
+          <summary class="flex items-center justify-between w-full p-4 cursor-pointer text-left font-medium text-slate-700 hover:text-green-600">
+            <span>🏃 How does exercise affect food requirements?</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-slate-600">
+            <p>Very active dogs (working dogs, agility training, long daily runs) may need 20-40% more calories than sedentary dogs. Moderate exercise like daily walks requires about 10-20% more food. Indoor dogs or those with limited mobility need fewer calories to prevent weight gain. Adjust portions seasonally if activity levels change.</p>
+          </div>
+        </details>
+
+        <details class="group bg-slate-50 rounded-lg">
+          <summary class="flex items-center justify-between w-full p-4 cursor-pointer text-left font-medium text-slate-700 hover:text-green-600">
+            <span>🍪 How should I account for treats and snacks?</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-slate-600">
+            <p>Treats should make up no more than 10% of your dog's daily caloric intake. If you give lots of treats for training, reduce their main meal portions accordingly. Many dog treats are high in calories - a few large biscuits can equal 100-200 calories. Use small, low-calorie treats or break larger ones into pieces for training sessions.</p>
+          </div>
+        </details>
+      </div>
+    </section>
   </main>
 
   <!-- Footer -->
-   <footer class="max-w-4xl mx-auto px-4 py-8 text-sm text-slate-500">
-  <div class="border-t border-slate-100 pt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-    <div>Made with ❤️ — For educational/demo use. Not a substitute for veterinary advice.</div>
-    <div class="flex space-x-4">
-        <a href="About Us.html" class="hover:text-slate-700">About</a>
-      <span>|</span>
-      <a href="Terms of Use & Privacy Policy.html" class="hover:text-slate-700">Terms of Use</a>
-      <span>|</span>
-      <a href="Terms of Use & Privacy Policy.html" class="hover:text-slate-700">Privacy Policy</a>
+<footer class="max-w-4xl mx-auto px-4 py-8 text-sm text-slate-500 mobile-text-base">
+    <div class="border-t border-slate-100 pt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <!-- Heart Icon -->
+        <svg class="w-4 h-4 text-rose-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M21 8.5c0-2.485-2.239-4.5-5-4.5-1.664 0-3.13.781-4 2.009C11.13 4.781 9.664 4 8 4 5.239 4 3 6.015 3 8.5c0 3.398 3.25 6.212 9 11.5 5.75-5.288 9-8.102 9-11.5z"/>
+        </svg>
+        Made with ❤️ — For educational/demo use. Not a substitute for veterinary advice.
+      </div>
+      <div class="flex space-x-4">
+        <a href="About Us.html" class="flex items-center gap-1 hover:text-slate-700">
+          <!-- Info Icon -->
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          About
+        </a>
+        <span>|</span>
+        <a href="Terms of Use & Privacy Policy.html" class="flex items-center gap-1 hover:text-slate-700">
+          <!-- Document Icon -->
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" x2="8" y1="13" y2="13"/>
+            <line x1="16" x2="8" y1="17" y2="17"/>
+            <polyline points="10,9 9,9 8,9"/>
+          </svg>
+          Terms of Use
+        </a>
+        <span>|</span>
+        <a href="https://brahim2503.github.io/Dog-Age-Calculator/Terms%20of%20Use%20&%20Privacy%20Policy.html" class="flex items-center gap-1 hover:text-slate-700">
+          <!-- Shield Icon -->
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Privacy Policy
+        </a>
+      </div>
     </div>
-  </div>
-</footer>
+  </footer>
 
+  <!-- JavaScript: Dog Food Calculator Logic -->
   <script>
-    // Default kcal per 100g
-    const FOOD_KCAL = { dry: 350, wet: 100 };
+   // Fixed JavaScript: Dog Food Calculator Logic
 
-    // Activity factor table by age/activity
-    const ACTIVITY_FACTORS = {
-      puppy: 2.5, // average puppy factor
-      adult: { low: 1.2, moderate: 1.6, active: 2.0 },
-      senior: 1.4
-    };
+// Feeding calculation constants - based on veterinary guidelines
+const FEEDING_RULES = {
+  // Base metabolic rate calculation: RER = 70 * (weight in kg)^0.75
+  // Then multiply by life stage factor
+  lifeStageFactors: {
+    puppy: 2.0,        // Growing puppies need double calories
+    adult: 1.8,        // Intact adult dogs
+    senior: 1.4,       // Less active seniors
+    pregnant: 2.5      // Pregnant/nursing females need more
+  },
+  
+  // Activity level multipliers
+  activityFactors: {
+    low: 1.0,          // Inactive/indoor dogs
+    moderate: 1.2,     // Regular walks, some play
+    high: 1.4          // Very active, working dogs
+  },
+  
+  // Food calorie density (kcal per unit)
+  foodCalories: {
+    dry: 350,          // kcal per cup (average)
+    wet: 85,           // kcal per 100g
+    'semi-moist': 300, // kcal per cup
+    raw: 165           // kcal per 100g
+  },
+  
+  // Feeding frequency recommendations
+  mealFrequency: {
+    puppy: '3-4 times daily',
+    adult: '2 times daily', 
+    senior: '2-3 times daily',
+    pregnant: '3-4 times daily (smaller portions)'
+  }
+};
 
-    const form = document.getElementById('food-form');
-    const resultCard = document.getElementById('result-card');
-    const resultText = document.getElementById('result-text');
-    const weightInput = document.getElementById('weight');
-    const weightError = document.getElementById('weight-error');
-    const clearBtn = document.getElementById('clear-btn');
-    const printBtn = document.getElementById('print-btn');
+// DOM elements - FIXED SELECTORS
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
 
-    function calculateRER(weightKg) {
-      return 70 * Math.pow(weightKg, 0.75);
+const mobileNavToggle = $('#mobile-nav-toggle');
+const mobileNav = $('#mobile-nav');
+const form = $('#calculator-form');
+const weightInput = $('#weight');
+const weightUnit = $('#weight-unit');
+const foodType = $('#food-type');
+const resultCard = $('#result-card');
+const resultAmount = $('#result-amount');
+const resultCalories = $('#result-calories');
+const resultMeals = $('#result-meals');
+const copyBtn = $('#copy-btn');
+const shareBtn = $('#share-btn');
+const copyFeedback = $('#copy-feedback');
+const clearBtn = $('#clear-btn');
+
+// Error message elements
+const weightError = $('#weight-error');
+const ageError = $('#age-error');
+const activityError = $('#activity-error');
+const foodTypeError = $('#food-type-error');
+
+// Mobile nav toggle
+mobileNavToggle?.addEventListener('click', () => {
+  const visible = !mobileNav.classList.contains('hidden');
+  if (visible) {
+    mobileNav.classList.add('hidden');
+    mobileNavToggle.setAttribute('aria-expanded', 'false');
+  } else {
+    mobileNav.classList.remove('hidden');
+    mobileNavToggle.setAttribute('aria-expanded', 'true');
+  }
+});
+
+// Convert weight to kg if needed
+function convertWeightToKg(weight, unit) {
+  return unit === 'kg' ? weight : weight * 0.453592; // lbs to kg
+}
+
+// Calculate Resting Energy Requirements using standard veterinary formula
+function calculateRER(weightKg) {
+  // RER = 70 * (body weight in kg)^0.75
+  return 70 * Math.pow(weightKg, 0.75);
+}
+
+// Calculate total daily energy requirements
+function calculateDER(rer, ageGroup, activityLevel) {
+  const lifeStageFactor = FEEDING_RULES.lifeStageFactors[ageGroup] || 1.8;
+  const activityFactor = FEEDING_RULES.activityFactors[activityLevel] || 1.2;
+  return rer * lifeStageFactor * activityFactor;
+}
+
+// Convert calories to food amount based on food type
+function calculateFoodAmount(totalCalories, foodType) {
+  const caloriesPerUnit = FEEDING_RULES.foodCalories[foodType] || 350;
+  const amount = totalCalories / caloriesPerUnit;
+  
+  // Format output based on food type
+  if (foodType === 'dry' || foodType === 'semi-moist') {
+    return `${amount.toFixed(1)} cups per day`;
+  } else {
+    // Wet food and raw in grams
+    const grams = amount * 100; // Convert to grams
+    return `${Math.round(grams)}g per day`;
+  }
+}
+
+// Input validation - IMPROVED
+function validateInputs(weight, ageGroup, activityLevel, foodType) {
+  let isValid = true;
+  
+  // Clear previous errors
+  weightError.textContent = '';
+  ageError.textContent = '';
+  activityError.textContent = '';
+  foodTypeError.textContent = '';
+
+  // Validate weight with better bounds
+  if (!weight || weight <= 0) {
+    weightError.textContent = 'Please enter a valid weight greater than 0.';
+    isValid = false;
+  } else if (weight < 0.5) {
+    weightError.textContent = 'Weight too small. Minimum 0.5 lbs/kg.';
+    isValid = false;
+  } else if (weight > 300) {
+    weightError.textContent = 'Weight seems unusually high. Please verify.';
+    isValid = false;
+  }
+
+  // Validate age group selection
+  if (!ageGroup) {
+    ageError.textContent = 'Please select a life stage.';
+    isValid = false;
+  }
+
+  // Validate activity level selection  
+  if (!activityLevel) {
+    activityError.textContent = 'Please select an activity level.';
+    isValid = false;
+  }
+
+  // Validate food type
+  if (!foodType) {
+    foodTypeError.textContent = 'Please select a food type.';
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+// Main calculation handler - IMPROVED ERROR HANDLING
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  copyFeedback.textContent = '';
+  resultCard.classList.add('hidden');
+
+  // Get form values
+  const weight = parseFloat(weightInput.value);
+  const unit = weightUnit.value;
+  const ageGroup = document.querySelector('input[name="age-group"]:checked')?.value;
+  const activityLevel = document.querySelector('input[name="activity"]:checked')?.value;
+  const selectedFoodType = foodType.value;
+
+  console.log('Form values:', { weight, unit, ageGroup, activityLevel, selectedFoodType });
+
+  // Validate inputs
+  if (!validateInputs(weight, ageGroup, activityLevel, selectedFoodType)) {
+    return;
+  }
+
+  try {
+    // Convert weight to kg
+    const weightKg = convertWeightToKg(weight, unit);
+    console.log('Weight in kg:', weightKg);
+
+    // Validate converted weight
+    if (weightKg < 0.2 || weightKg > 136) { // 0.5 lbs to 300 lbs in kg
+      weightError.textContent = 'Weight outside normal range for dogs.';
+      return;
     }
 
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      weightError.textContent = '';
-      resultCard.classList.add('hidden');
+    // Calculate energy requirements
+    const rer = calculateRER(weightKg);
+    console.log('RER:', rer);
+    
+    const der = calculateDER(rer, ageGroup, activityLevel);
+    console.log('DER:', der);
 
-      const weight = parseFloat(weightInput.value);
-      if (isNaN(weight) || weight <= 0) {
-        weightError.textContent = 'Please enter a valid weight greater than 0.';
-        return;
+    // Validate calculated calories
+    if (der < 50 || der > 10000) {
+      copyFeedback.textContent = 'Calculated calories seem unusual. Please verify inputs.';
+      return;
+    }
+
+    // Calculate food amount
+    const foodAmount = calculateFoodAmount(der, selectedFoodType);
+    console.log('Food amount:', foodAmount);
+    
+    // Get feeding frequency
+    const mealFreq = FEEDING_RULES.mealFrequency[ageGroup];
+
+    // Update results
+    resultAmount.textContent = `Amount: ${foodAmount}`;
+    resultCalories.textContent = `Daily calories: ${Math.round(der)} kcal`;
+    resultMeals.textContent = `Feeding schedule: ${mealFreq}`;
+
+    // Show results
+    resultCard.classList.remove('hidden');
+    
+    // Save result for copy/share
+    resultCard.dataset.result = `Daily food: ${foodAmount} | Calories: ${Math.round(der)} kcal | Schedule: ${mealFreq}`;
+    
+    // Scroll to results
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    
+  } catch (error) {
+    console.error('Calculation error:', error);
+    copyFeedback.textContent = 'Error in calculation. Please check your inputs and try again.';
+  }
+});
+
+// Copy functionality
+copyBtn.addEventListener('click', async () => {
+  const text = resultCard.dataset.result || 'No result to copy';
+  try {
+    await navigator.clipboard.writeText(text);
+    copyFeedback.textContent = 'Result copied to clipboard.';
+    setTimeout(() => copyFeedback.textContent = '', 3000); // Clear message after 3s
+  } catch (err) {
+    copyFeedback.textContent = 'Copy failed. You can manually select and copy the text.';
+  }
+});
+
+// Share functionality
+shareBtn.addEventListener('click', async () => {
+  const text = resultCard.dataset.result || 'Dog feeding calculation result';
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Dog Food Calculation',
+        text
+      });
+    } catch (err) {
+      if (err.name !== 'AbortError') { // Don't show error if user canceled
+        copyFeedback.textContent = 'Share not available.';
       }
+    }
+  } else {
+    try {
+      await navigator.clipboard.writeText(text);
+      copyFeedback.textContent = 'Share not supported — result copied to clipboard.';
+    } catch (err) {
+      copyFeedback.textContent = 'Share not supported and copy failed.';
+    }
+  }
+});
 
-      const age = form.age.value;
-      const activity = form.activity.value;
-      const foodType = form.foodType.value;
+// Clear form
+clearBtn.addEventListener('click', () => {
+  form.reset();
+  weightError.textContent = '';
+  ageError.textContent = '';
+  activityError.textContent = '';
+  foodTypeError.textContent = '';
+  resultCard.classList.add('hidden');
+  copyFeedback.textContent = '';
+  
+  // Reset to default selections
+  const puppyRadio = document.querySelector('input[name="age-group"][value="puppy"]');
+  const lowActivityRadio = document.querySelector('input[name="activity"][value="low"]');
+  
+  if (puppyRadio) puppyRadio.checked = true;
+  if (lowActivityRadio) lowActivityRadio.checked = true;
+});
 
-      let activityFactor = 1.0;
-      if (age === 'puppy') activityFactor = ACTIVITY_FACTORS.puppy;
-      else if (age === 'senior') activityFactor = ACTIVITY_FACTORS.senior;
-      else activityFactor = ACTIVITY_FACTORS.adult[activity] ?? 1.6;
+// Keyboard accessibility for radio buttons - FIXED
+const radioGroups = [
+  $$('input[name="age-group"]'),
+  $$('input[name="activity"]')
+];
 
-      const rer = calculateRER(weight);
-      const mer = rer * activityFactor;
-
-      const gramsPer100kcal = FOOD_KCAL[foodType];
-      const foodGrams = (mer / gramsPer100kcal) * 100;
-
-      resultText.textContent = `Recommended: ${Math.round(foodGrams)} g/day`;
-      resultCard.classList.remove('hidden');
+radioGroups.forEach(group => {
+  group.forEach(radio => {
+    radio.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        radio.checked = true;
+        radio.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     });
+  });
+});
 
-    clearBtn.addEventListener('click', () => {
-      form.reset();
-      weightError.textContent = '';
-      resultCard.classList.add('hidden');
-    });
-
-    printBtn.addEventListener('click', () => {
-      window.print();
-    });
+// Add form change listeners for real-time validation
+weightInput.addEventListener('input', () => {
+  const weight = parseFloat(weightInput.value);
+  if (weight && (weight < 0.5 || weight > 300)) {
+    weightInput.style.borderColor = '#ef4444';
+  } else {
+    weightInput.style.borderColor = '';
+  }
+});
   </script>
 </body>
-</html>
-
-
-
+</html> 
