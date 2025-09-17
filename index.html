@@ -512,6 +512,57 @@ Note: This is a standalone single-file demo. In production, consider serving Tai
       </div>
     </section>
   </main>
+  <!-- Dog Age Conversion Table Section -->
+<section class="mt-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+  <div class="flex items-center gap-3 mb-6">
+    <!-- Table Icon -->
+    <svg class="w-6 h-6 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M3 3h18v18H3z"/>
+      <path d="M3 9h18"/>
+      <path d="M3 15h18"/>
+      <path d="M9 3v18"/>
+      <path d="M15 3v18"/>
+    </svg>
+    <h2 class="text-xl font-semibold text-slate-800 mobile-text-xl">Dog Age Conversion Table</h2>
+  </div>
+
+  <!-- Responsive table wrapper -->
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse bg-white rounded-lg overflow-hidden shadow-sm">
+      <thead class="bg-amber-50">
+        <tr>
+          <th class="border border-slate-200 px-4 py-3 text-left font-semibold text-slate-700 mobile-text-base">Dog Age</th>
+          <th class="border border-slate-200 px-4 py-3 text-left font-semibold text-slate-700 mobile-text-base">Small Breed</th>
+          <th class="border border-slate-200 px-4 py-3 text-left font-semibold text-slate-700 mobile-text-base">Medium Breed</th>
+          <th class="border border-slate-200 px-4 py-3 text-left font-semibold text-slate-700 mobile-text-base">Large Breed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="hover:bg-slate-50">
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">1 year</td>
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">15 years</td>
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">14 years</td>
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">12 years</td>
+        </tr>
+        <tr class="hover:bg-slate-50">
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">2 years</td>
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">24 years</td>
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">23 years</td>
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">22 years</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Optional explanatory note -->
+  <p class="mt-4 text-sm text-slate-500 mobile-text-base">
+    <svg class="w-4 h-4 text-slate-400 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="m9 12 2 2 4-4"/>
+    </svg>
+    This table shows approximate conversions for the first two years of a dog's life. Use our calculator above for more detailed age calculations.
+  </p>
+</section>
 
   <!-- Footer -->
   <footer class="max-w-4xl mx-auto px-4 py-8 text-sm text-slate-500 mobile-text-base">
@@ -789,6 +840,7 @@ Note: This is a standalone single-file demo. In production, consider serving Tai
   </script>
 </body>
 </html>
+
 
 
 
