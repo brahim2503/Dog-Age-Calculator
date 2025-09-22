@@ -1,0 +1,875 @@
+<!--
+README (top comment block)
+
+Dog Age Calculator - Single-file webpage (HTML + Tailwind + Vanilla JS)
+Author: ChatGPT (frontend dev assistant)
+Purpose: Interactive dog-to-human age converter. Mobile-first, accessible, keyboard-friendly.
+How to use: Open this file in any modern browser. Pick a dog date of birth and size, then click "Calculate Age".
+Tailwind: Loaded from CDN for quick prototyping (cdn.tailwindcss.com). In production, replace with a built Tailwind bundle.
+
+Calculation rules (configurable in JS):
+  - First dog year  => 15 human years
+  - Second dog year => 9 human years
+  - Each additional dog year:
+      - Small dogs  => ~4 human years per dog year
+      - Medium dogs => ~5 human years per dog year
+      - Large dogs  => ~6 human years per dog year
+  These constants are set in the `AGE_RULES` object inside the script and can be adjusted.
+
+Accessibility:
+  - Uses semantic elements and ARIA attributes (aria-label, role, aria-live).
+  - Keyboard accessible: form fields, radio group, and buttons.
+  - Inline error messages are announced to screen readers via aria-live.
+
+Testing note (sample test case included):
+  - Sample test case (static example): DOB=2019-06-15, size=Large
+    - Dog age (calendar) as of 2025-09-09 ≈ 6.22 dog years
+    - Calculation steps (Large): 1st year = 15, 2nd = 9, remainder ≈ 4.22 * 6 ≈ 25.32
+    - Expected human age ≈ 15 + 9 + 25.32 ≈ 49.3 → Displayed as "~49 years"
+    - This test demonstrates algorithm correctness; results will vary depending on current date.
+
+Note: This is a standalone single-file demo. In production, consider serving Tailwind from a proper build pipeline and add unit tests.
+
+-->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dog Years to Human Years Calculator | Accurate Dog Age Tool</title>
+  <meta name="description" content=" Convert dog years to human years instantly with our free calculator. More accurate than the 7-year rule, adjusted by breed size, health, and life stage." />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="shortcut icon" href="favicon2.ico" type="image/x-icon" sizes="16x16" >
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Dog Age Calculator",
+  "url": "https://brahim2503.github.io/Dog-Age-Calculator/",
+  "description": "Free Dog Age Calculator that converts dog years to human years accurately based on breed size, health, and life stage.",
+  "applicationCategory": "Calculator",
+  "operatingSystem": "All",
+  "creator": {
+    "@type": "Person",
+    "name": "Brahim"
+  }
+}
+  </script>
+  <!-- Open Graph -->
+  <meta property="og:title" content="Dog Age Calculator" />
+  <meta property="og:description" content="Convert your dog's age to human years using size-based rules. Fast, accessible, and mobile-friendly." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="" />
+  <meta name="google-site-verification" content="RjZOdeoQkL_lAnf3zG3mtVWOUvKc_FYmV779KiwXJ0k" />
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3YDMB4JY02"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-3YDMB4JY02');
+</script>
+  <!-- Tailwind CDN for quick prototype -->
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> 
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased mobile-text-base">
+  <!-- Header / Navigation -->
+  <header class="bg-white shadow-sm sticky top-0 z-30">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="https://brahim2503.github.io/Dog-Age-Calculator/index.html" class="flex items-center gap-3" aria-label="Dog Age Calculator home">
+        <!-- Updated Dog Icon -->
+        <svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M4.5 12a7.5 7.5 0 0015 0 7.5 7.5 0 00-15 0zm11.25-1.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm-7.5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM12 15.75a3 3 0 01-2.25-.75.75.75 0 00-1.5 1.5A4.5 4.5 0 0012 17.25a4.5 4.5 0 003.75-1.5.75.75 0 00-1.5-1.5A3 3 0 0112 15.75z"/>
+          <path d="M8.25 6.75C8.25 4.679 9.929 3 12 3s3.75 1.679 3.75 3.75c0 .414-.336.75-.75.75s-.75-.336-.75-.75c0-1.243-1.007-2.25-2.25-2.25s-2.25 1.007-2.25 2.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75z"/>
+        </svg>
+        <div>
+          <h1 class="text-lg font-semibold leading-none mobile-text-xl">Dog Age Calculator</h1>
+          <p class="text-xs text-slate-500 mobile-text-base">Dog → Human years made simple</p>
+        </div>
+      </a>
+
+      <nav role="navigation" aria-label="Main navigation" class="hidden md:flex gap-4">
+        <a href="https://brahim2503.github.io/Dog-Age-Calculator/index.html" class="flex items-center gap-2 text-sm font-medium text-amber-600 underline underline-offset-4 px-2 py-1 rounded" aria-current="page">
+          <!-- Calculator Icon -->
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
+            <line x1="8" x2="16" y1="6" y2="6"/>
+            <line x1="8" x2="16" y1="10" y2="10"/>
+            <line x1="8" x2="16" y1="14" y2="14"/>
+            <line x1="8" x2="16" y1="18" y2="18"/>
+          </svg>
+          Dog Age Calculator 
+        </a>
+        <a href="https://brahim2503.github.io/Dog-Age-Calculator/Dog%20Food%20Calculator.html" class="flex items-center gap-2 text-sm text-slate-600 hover:text-amber-600 px-2 py-1 rounded">
+          <!-- Food Bowl Icon -->
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 12h18l-1.68 7.44a1 1 0 01-.98.81H5.66a1 1 0 01-.98-.81L3 12z"/>
+            <path d="M12 2v10"/>
+            <path d="M8 8h8"/>
+          </svg>
+          Dog Food Calculator
+        </a>
+        <a href="About Us.html" class="flex items-center gap-2 text-sm text-slate-600 hover:text-amber-600 px-2 py-1 rounded">
+          <!-- Info Icon -->
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          About
+        </a>
+      </nav>
+
+      <button id="mobile-nav-toggle" class="md:hidden p-2 rounded hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-300" aria-label="Open navigation">
+        <svg class="w-6 h-6 text-slate-700" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile nav -->
+    <div id="mobile-nav" class="md:hidden hidden px-4 pb-4">
+      <nav class="flex flex-col gap-2">
+        <a href="https://brahim2503.github.io/Dog-Age-Calculator/index.html" class="flex items-center gap-2 text-amber-600 px-2 py-2 rounded bg-amber-50 mobile-text-base">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
+            <line x1="8" x2="16" y1="6" y2="6"/>
+            <line x1="8" x2="16" y1="10" y2="10"/>
+            <line x1="8" x2="16" y1="14" y2="14"/>
+            <line x1="8" x2="16" y1="18" y2="18"/>
+          </svg>
+          Dog Age Calculator
+        </a>
+        <a href="https://brahim2503.github.io/Dog-Age-Calculator/Dog%20Food%20Calculator.html" class="flex items-center gap-2 text-slate-700 px-2 py-2 rounded hover:bg-slate-50 mobile-text-base">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 12h18l-1.68 7.44a1 1 0 01-.98.81H5.66a1 1 0 01-.98-.81L3 12z"/>
+            <path d="M12 2v10"/>
+            <path d="M8 8h8"/>
+          </svg>
+          Dog Food Calculator
+        </a>
+        <a href="About Us.html" class="flex items-center gap-2 text-slate-700 px-2 py-2 rounded hover:bg-slate-50 mobile-text-base">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          About
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <section aria-labelledby="main-heading">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <!-- Left column: info card -->
+        <aside class="md:col-span-1">
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+     
+            <div class="flex items-center gap-3 mb-4">
+              <!-- Heart Icon for love -->
+              <svg class="w-6 h-6 text-rose-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M21 8.5c0-2.485-2.239-4.5-5-4.5-1.664 0-3.13.781-4 2.009C11.13 4.781 9.664 4 8 4 5.239 4 3 6.015 3 8.5c0 3.398 3.25 6.212 9 11.5 5.75-5.288 9-8.102 9-11.5z"/>
+              </svg>
+              <h2 id="main-heading" class="text-xl font-semibold mobile-text-xl">Dog Age Calculator – Convert Dog Years to Human Years</h2>
+            </div>
+            <p class="text-sm text-slate-600 mb-4 mobile-text-base">Want to know how old your furry friend really is? Our free Dog Age Calculator helps you convert dog years into human years with greater accuracy. Unlike the old “1 dog year = 7 human years” myth, this tool considers your dog’s breed size, life stage, and overall health for better results.  Whether you have a playful puppy, an energetic adult dog, or a loyal senior companion, you’ll get a reliable estimate of your dog’s true age in human years.  Try the calculator now and discover your pet’s real age!</p>
+            <ul class="text-sm space-y-2 mobile-text-base">
+              <li class="flex items-center gap-2">
+                <!-- Star Icon -->
+                <svg class="w-4 h-4 text-amber-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                First year counts more (developmental years)
+              </li>
+              <li class="flex items-center gap-2">
+                <!-- Trending Up Icon -->
+                <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="22,7 13.5,15.5 8.5,10.5 2,17"/>
+                  <polyline points="16,7 22,7 22,13"/>
+                </svg>
+                Size affects later-year scaling
+              </li>
+              <li class="flex items-center gap-2">
+                <!-- Accessibility Icon -->
+                <svg class="w-4 h-4 text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="4" r="2"/>
+                  <path d="m9 20 3-6 3 6"/>
+                  <path d="m6 8 6 2 6-2"/>
+                </svg>
+                Accessible and keyboard-friendly
+              </li>
+            </ul>
+            
+            <!-- Internal Links Section -->
+            <div class="mt-4 pt-4 border-t border-slate-100">
+              <h3 class="text-sm font-medium text-slate-700 mb-2">🔗 Related Tools</h3>
+              <div class="space-y-2">
+                <a href="https://brahim2503.github.io/Dog-Age-Calculator/Dog%20Food%20Calculator.html" 
+                   class="flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 mobile-text-base">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12h18l-1.68 7.44a1 1 0 01-.98.81H5.66a1 1 0 01-.98-.81L3 12z"/>
+                    <path d="M12 2v10"/>
+                  </svg>
+                  Calculate Dog Food Requirements
+                </a>
+                <a href="About Us.html" 
+                   class="flex items-center gap-2 text-sm text-slate-600 hover:text-amber-600 mobile-text-base">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="m9 12 2 2 4-4"/>
+                  </svg>
+                  Learn About Pet Care
+                </a>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Right column: calculator -->
+        <div class="md:col-span-2">
+          <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
+            <!-- Calculator Image -->
+
+         
+            <form id="calculator-form" class="space-y-6" role="form" aria-labelledby="calc-heading">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <!-- Calculator Icon -->
+                  <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
+                    <line x1="8" x2="16" y1="6" y2="6"/>
+                    <line x1="8" x2="16" y1="10" y2="10"/>
+                    <line x1="8" x2="16" y1="14" y2="14"/>
+                    <line x1="8" x2="16" y1="18" y2="18"/>
+                  </svg>
+                  <h3 id="calc-heading" class="text-lg font-medium mobile-text-lg">Dog Age Calculator</h3>
+                </div>
+                <div class="flex items-center gap-1 text-sm text-slate-500 mobile-text-base">
+                  <!-- Clock Icon -->
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12,6 12,12 16,14"/>
+                  </svg>
+                  Quick & approximate
+                </div>
+              </div>
+
+              <!-- Date of birth -->
+              <div>
+                <label for="dob" class="flex items-center gap-2 text-sm font-medium text-slate-700 mobile-text-base">
+                  <!-- Calendar Icon -->
+                  <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                    <line x1="16" x2="16" y1="2" y2="6"/>
+                    <line x1="8" x2="8" y1="2" y2="6"/>
+                    <line x1="3" x2="21" y1="10" y2="10"/>
+                  </svg>
+                  Date of birth
+                </label>
+                <input
+                  id="dob"
+                  name="dob"
+                  type="date"
+                  aria-label="Dog date of birth"
+                  class="mt-2 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-300 mobile-text-base"
+                  required
+                />
+                <p id="dob-error" class="mt-1 text-sm text-rose-600 mobile-text-base" role="alert" aria-live="polite"></p>
+              </div>
+
+              <!-- Size -->
+              <div>
+                <span class="flex items-center gap-2 text-sm font-medium text-slate-700 mobile-text-base">
+                  <!-- Resize Icon -->
+                  <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M3 9h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    <path d="m3 9 2.45-4.9A2 2 0 017.24 3h9.52a2 2 0 011.8 1.1L21 9"/>
+                  </svg>
+                  Size
+                </span>
+                <fieldset id="size-fieldset" class="mt-2 flex gap-3" role="radiogroup" aria-label="Dog size">
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="size" value="small" class="sr-only peer" checked aria-checked="true" />
+                    <span class="flex items-center gap-2 px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700 mobile-text-base">
+                      <!-- Small Dog Icon -->
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      Small
+                    </span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="size" value="medium" class="sr-only peer" aria-checked="false" />
+                    <span class="flex items-center gap-2 px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700 mobile-text-base">
+                      <!-- Medium Dog Icon -->
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="5"/>
+                      </svg>
+                      Medium
+                    </span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="size" value="large" class="sr-only peer" aria-checked="false" />
+                    <span class="flex items-center gap-2 px-3 py-2 rounded-lg border peer-checked:bg-amber-50 peer-checked:border-amber-300 peer-checked:text-amber-700 mobile-text-base">
+                      <!-- Large Dog Icon -->
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="8"/>
+                      </svg>
+                      Large
+                    </span>
+                  </label>
+                </fieldset>
+                <p id="size-error" class="mt-1 text-sm text-rose-600 mobile-text-base" role="alert" aria-live="polite"></p>
+              </div>
+
+              <!-- Buttons -->
+              <div class="flex flex-col sm:flex-row gap-3">
+                <button
+                  id="calculate-btn"
+                  type="submit"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-amber-600 text-white font-medium hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-300 mobile-text-base"
+                >
+                  <!-- Calculate Icon (was search, now calculator) -->
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
+                    <line x1="8" x2="16" y1="6" y2="6"/>
+                    <line x1="8" x2="16" y1="10" y2="10"/>
+                    <line x1="8" x2="16" y1="14" y2="14"/>
+                    <line x1="8" x2="16" y1="18" y2="18"/>
+                  </svg>
+                  Calculate Age
+                </button>
+
+                <button
+                  id="clear-btn"
+                  type="button"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-<button
+                  id="clear-btn"
+                  type="button"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-300 mobile-text-base"
+                >
+                  <!-- Clear/Refresh Icon -->
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/>
+                    <path d="M21 3v5h-5"/>
+                    <path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"/>
+                    <path d="M3 21v-5h5"/>
+                  </svg>
+                  Clear
+                </button>
+              </div>
+
+              <!-- Result card -->
+              <div id="result-card" class="hidden mt-3 bg-amber-50 border border-amber-100 rounded-lg p-4" role="status" aria-live="polite">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <!-- Dog Icon -->
+                      <svg class="w-4 h-4 text-amber-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M4.5 12a7.5 7.5 0 0015 0 7.5 7.5 0 00-15 0zm11.25-1.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm-7.5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                      </svg>
+                      <p id="result-dog-age" class="text-sm text-slate-600 mobile-text-base">Dog age: —</p>
+                    </div>
+                    <div class="flex items-center gap-2 mb-2">
+                      <!-- Human Icon -->
+                      <svg class="w-4 h-4 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                      </svg>
+                      <p id="result-human-age" class="text-lg font-semibold text-amber-700 mobile-text-lg">Human age: —</p>
+                    </div>
+                    <div class="flex items-start gap-2">
+                      <!-- Info Icon -->
+                      <svg class="w-3 h-3 text-slate-400 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="m9 12 2 2 4-4"/>
+                      </svg>
+                      <p id="result-note" class="text-xs text-slate-500 mobile-text-base">Tip: Results are approximate. Adjust rules in script constants if you prefer different scaling.</p>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col items-end gap-2">
+                    <button id="copy-btn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white border border-slate-200 text-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-300 mobile-text-base" aria-label="Copy result to clipboard">
+                      <!-- Copy Icon -->
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                      </svg>
+                      Copy
+                    </button>
+                    <button id="share-btn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white border border-slate-200 text-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-300 mobile-text-base" aria-label="Share result">
+                      <!-- Share Icon -->
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                        <polyline points="16,6 12,2 8,6"/>
+                        <line x1="12" x2="12" y1="2" y2="15"/>
+                      </svg>
+                      Share
+                    </button>
+                  </div>
+                </div>
+                <p id="copy-feedback" class="mt-2 text-xs text-slate-600 mobile-text-base" aria-live="polite"></p>
+              </div>
+
+            </form>
+          </div>
+
+          <!-- Extra: small explanation card -->
+          <div class="mt-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-sm text-slate-600 mobile-text-base">
+            <div class="flex items-center gap-2 mb-2">
+              <!-- Question Mark Icon -->
+              <svg class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+                <path d="M12 17h.01"/>
+              </svg>
+              <strong> How to Calculate Dog Age in Human Years </strong>
+            </div>
+            <p class="mt-2">Many dog owners want to know how to calculate their dog’s age in human years. The popular rule of “1 dog year = 7 human years” is not correct, since dogs age differently depending on their breed and size. Small dogs usually live longer and age more slowly, while large and giant breeds age faster. According to veterinarians, the first year of a dog’s life is equal to about 15 human years, the second year equals around 9 human years, and every year after that is about 4–5 human years for small and medium breeds, and 6–7 human years for larger breeds. A simple way to get a more accurate result is to use a dog age calculator, which takes into account your dog’s age, breed size, and life stage. Understanding your dog’s true age helps you provide the right food, exercise, and healthcare at every stage of life, ensuring your furry friend enjoys a happy, healthy, and longer life.<a href="https://stokevets.co.nz/pet-advice/pet-age-calculator/" class="text-amber-600 hover:text-amber-700 underline">dog age calculator</a>, which considers the dog's age and size to give a more accurate result. These calculators help pet owners understand their dog's life stage, whether it's puppy hood, adulthood, or senior years, so they can adjust food, exercise, and healthcare accordingly. By knowing how to calculate your dog's age in human years, you can take better care of your furry friend and ensure a happy, healthy life. Don't forget to also check our<a href="https://brahim2503.github.io/Dog-Age-Calculator/Dog%20Food%20Calculator.html" class="text-amber-600 hover:text-amber-700 underline"> Dog Food Calculator </a> to plan the best nutrition for your pet and support their long-term health and wellbeing.dog food calculator for optimal nutrition planning.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="mt-12 bg-white p-8 rounded-2xl shadow-sm border border-slate-100" aria-labelledby="faq-heading">
+      <div class="mb-6">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNjQwIj4KICA8IS0tIERvZyBIZWFkIC0tPgogIDxlbGxpcHNlIGN4PSIzMjAiIGN5PSIzMDAiIHJ4PSIxNDAiIHJ5PSIxMjAiIGZpbGw9IiNGNTlDNDEiLz4KICA8IS0tIERvZyBFYXJzIC0tPgogIDxlbGxpcHNlIGN4PSIyMDAiIGN5PSIyMDAiIHJ4PSI2MCIgcnk9IjkwIiB0cmFuc2Zvcm09InJvdGF0ZSgtMzAgMjAwIDIwMCkiIGZpbGw9IiNGNTlDNDEiLz4KICA8ZWxsaXBzZSBjeD0iNDQwIiBjeT0iMjAwIiByeD0iNjAiIHJ5PSI5MCIgdHJhbnNmb3JtPSJyb3RhdGUoMzAgNDQwIDIwMCkiIGZpbGw9IiNGNTlDNDEiLz4KICA8IS0tIERvZyBFeWVzIC0tPgogIDxjaXJjbGUgY3g9IjI4MCIgY3k9IjI4MCIgcj0iMTUiIGZpbGw9IiMzNzQxNTEiLz4KICA8Y2lyY2xlIGN4PSIzNjAiIGN5PSIyODAiIHI9IjE1IiBmaWxsPSIjMzc0MTUxIi8+CiAgPCEtLSBEb2cgTm9zZSAtLT4KICA8ZWxsaXBzZSBjeD0iMzIwIiBjeT0iMzIwIiByeD0iMTIiIHJ5PSI4IiBmaWxsPSIjMzc0MTUxIi8+CiAgPCEtLSBEb2cgTW91dGggLS0+CiAgPHBhdGggZD0iTTI5MCAzNTAgUTMyMCAzNzAgMzUwIDM1MCIgc3Ryb2tlPSIjMzc0MTUxIiBzdHJva2Utd2lkdGg9IjMiIGZpbGw9Im5vbmUiLz4KICA8IS0tIERvZyBUb25ndWUgLS0+CiAgPGVsbGlwc2UgY3g9IjMyMCIgY3k9IjM4MCIgcng9IjE1IiByeT0iMTAiIGZpbGw9IiNFRjQ0NDQiLz4KICA8IS0tIERvZyBDb2xsYXIgLS0+CiAgPHJlY3QgeD0iMjAwIiB5PSI0MDAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMjAiIHJ4PSIxMCIgZmlsbD0iI0VGNDQ0NCIvPgogIDxjaXJjbGUgY3g9IjM4MCIgY3k9IjQxMCIgcj0iOCIgZmlsbD0iI0ZGRDcwMCIvPgo8L3N2Zz4K" 
+     alt="Happy dog with collar and tongue out" 
+     class="w-full h-24 object-contain rounded-lg bg-gradient-to-br from-amber-50 to-orange-100" 
+     loading="lazy" />
+
+      </div>
+      <div class="flex items-center gap-3 mb-6">
+        <svg class="w-8 h-8 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+          <path d="M12 17h.01"/>
+        </svg>
+        <h2 id="faq-heading" class="text-2xl font-bold text-slate-800 mobile-text-xl">Frequently Asked Questions</h2>
+      </div>
+
+      <div class="space-y-4">
+        <details class="group bg-slate-50 rounded-lg">
+          <summary class="flex items-center justify-between w-full p-4 cursor-pointer text-left font-medium text-slate-700 hover:text-amber-600 mobile-text-base">
+            <span>🐕 Is the "1 dog year = 7 human years" rule accurate?</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-slate-600 mobile-text-base">
+            <p>No, this old rule is not accurate. Dogs age much faster in their first two years, and the aging rate varies significantly based on size and breed. Our calculator uses a more scientifically accurate method: the first year equals about 15 human years, the second year equals 9 human years, and subsequent years vary by size (4-6 human years per dog year).</p>
+          </div>
+        </details>
+
+        <details class="group bg-slate-50 rounded-lg">
+          <summary class="flex items-center justify-between w-full p-4 cursor-pointer text-left font-medium text-slate-700 hover:text-amber-600 mobile-text-base">
+            <span>📏 How does dog size affect age calculation?</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-slate-600 mobile-text-base">
+            <p>Size significantly impacts aging rates. Small dogs (under 20 lbs) age more slowly after the first two years, adding about 4 human years per dog year. Medium dogs (20-50 lbs) add 5 human years, while large dogs (over 50 lbs) age faster, adding about 6 human years per dog year. This is why small dogs typically live 12-16 years while giant breeds often live only 8-10 years.</p>
+          </div>
+        </details>
+
+        <details class="group bg-slate-50 rounded-lg">
+          <summary class="flex items-center justify-between w-full p-4 cursor-pointer text-left font-medium text-slate-700 hover:text-amber-600 mobile-text-base">
+            <span>🎂 At what age is a dog considered senior?</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-slate-600 mobile-text-base">
+            <p>Dogs are generally considered seniors when they reach about 7-8 years old, but this varies by size. Small dogs become seniors around 8-10 years, medium dogs around 7-8 years, and large/giant breeds as early as 5-6 years. At this stage, they may need more frequent vet visits and adjusted care routines.</p>
+          </div>
+        </details>
+
+        <details class="group bg-slate-50 rounded-lg">
+          <summary class="flex items-center justify-between w-full p-4 cursor-pointer text-left font-medium text-slate-700 hover:text-amber-600 mobile-text-base">
+            <span>🏥 Why is knowing my dog's human age important?</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-slate-600 mobile-text-base">
+            <p>Understanding your dog's equivalent human age helps you provide appropriate care. Young dogs (puppies) need different nutrition and exercise than adult dogs, while senior dogs may require special diets, joint supplements, and more frequent health checkups. It also helps you understand behavioral changes and adjust expectations for activity levels.</p>
+          </div>
+        </details>
+
+        <details class="group bg-slate-50 rounded-lg">
+          <summary class="flex items-center justify-between w-full p-4 cursor-pointer text-left font-medium text-slate-700 hover:text-amber-600 mobile-text-base">
+            <span>🔬 How accurate is this calculator?</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-slate-600 mobile-text-base">
+            <p>Our calculator provides a good approximation based on veterinary research, but individual dogs may age differently based on breed, genetics, health, diet, and lifestyle. Mixed breeds often have different aging patterns than purebreds. For the most accurate assessment of your dog's health and aging, always consult with your veterinarian.</p>
+          </div>
+        </details>
+
+        <details class="group bg-slate-50 rounded-lg">
+          <summary class="flex items-center justify-between w-full p-4 cursor-pointer text-left font-medium text-slate-700 hover:text-amber-600 mobile-text-base">
+            <span>🍖 How does diet affect dog aging?</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"/>
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 text-slate-600 mobile-text-base">
+            <p>Proper nutrition can significantly impact how well dogs age. High-quality diets with appropriate portions help maintain healthy weight, reduce joint stress, and support organ function. Overweight dogs tend to age faster and develop health problems earlier. Check our <a href="https://brahim2503.github.io/Dog-Age-Calculator/Dog%20Food%20Calculator.html" class="text-amber-600 hover:text-amber-700 underline">dog food calculator</a> to ensure you're feeding the right amount for your dog's age and size.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+  <!-- Dog Age Conversion Table Section -->
+<section class="mt-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+  <div class="flex items-center gap-3 mb-6">
+    <!-- Table Icon -->
+    <svg class="w-6 h-6 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M3 3h18v18H3z"/>
+      <path d="M3 9h18"/>
+      <path d="M3 15h18"/>
+      <path d="M9 3v18"/>
+      <path d="M15 3v18"/>
+    </svg>
+    <h2 class="text-xl font-semibold text-slate-800 mobile-text-xl">Dog Age Conversion Table</h2>
+  </div>
+
+  <!-- Responsive table wrapper -->
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse bg-white rounded-lg overflow-hidden shadow-sm">
+      <thead class="bg-amber-50">
+        <tr>
+          <th class="border border-slate-200 px-4 py-3 text-left font-semibold text-slate-700 mobile-text-base">Dog Age</th>
+          <th class="border border-slate-200 px-4 py-3 text-left font-semibold text-slate-700 mobile-text-base">Small Breed</th>
+          <th class="border border-slate-200 px-4 py-3 text-left font-semibold text-slate-700 mobile-text-base">Medium Breed</th>
+          <th class="border border-slate-200 px-4 py-3 text-left font-semibold text-slate-700 mobile-text-base">Large Breed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="hover:bg-slate-50">
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">1 year</td>
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">15 years</td>
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">14 years</td>
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">12 years</td>
+        </tr>
+        <tr class="hover:bg-slate-50">
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">2 years</td>
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">24 years</td>
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">23 years</td>
+          <td class="border border-slate-200 px-4 py-3 text-slate-600 mobile-text-base">22 years</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Optional explanatory note -->
+  <p class="mt-4 text-sm text-slate-500 mobile-text-base">
+    <svg class="w-4 h-4 text-slate-400 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="m9 12 2 2 4-4"/>
+    </svg>
+    This table shows approximate conversions for the first two years of a dog's life. Use our calculator above for more detailed age calculations.
+  </p>
+</section>
+
+  <!-- Footer -->
+  <footer class="max-w-4xl mx-auto px-4 py-8 text-sm text-slate-500 mobile-text-base">
+    <div class="border-t border-slate-100 pt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <!-- Heart Icon -->
+        <svg class="w-4 h-4 text-rose-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M21 8.5c0-2.485-2.239-4.5-5-4.5-1.664 0-3.13.781-4 2.009C11.13 4.781 9.664 4 8 4 5.239 4 3 6.015 3 8.5c0 3.398 3.25 6.212 9 11.5 5.75-5.288 9-8.102 9-11.5z"/>
+        </svg>
+        Made with ❤️ — For educational/demo use. Not a substitute for veterinary advice.
+      </div>
+      <div class="flex space-x-4">
+        <a href="About Us.html" class="flex items-center gap-1 hover:text-slate-700">
+          <!-- Info Icon -->
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          About
+        </a>
+        <span>|</span>
+        <a href="Terms of Use & Privacy Policy.html" class="flex items-center gap-1 hover:text-slate-700">
+          <!-- Document Icon -->
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" x2="8" y1="13" y2="13"/>
+            <line x1="16" x2="8" y1="17" y2="17"/>
+            <polyline points="10,9 9,9 8,9"/>
+          </svg>
+          Terms of Use
+        </a>
+        <span>|</span>
+        <a href="https://brahim2503.github.io/Dog-Age-Calculator/Terms%20of%20Use%20&%20Privacy%20Policy.html" class="flex items-center gap-1 hover:text-slate-700">
+          <!-- Shield Icon -->
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Privacy Policy
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript: functionality & accessibility -->
+  <script>
+    // Constants and configuration for calculation rules
+    // Adjust these values to change how the human-equivalent age is estimated.
+    // AGE_RULES.firstYear = human years for dog's first year
+    // AGE_RULES.secondYear = human years for dog's second year
+    // AGE_RULES.addYears = human years per extra dog year for each size
+    const AGE_RULES = {
+      firstYear: 15,   // 1st dog year ≈ 15 human years
+      secondYear: 9,   // 2nd dog year ≈ 9 human years
+      addYears: {
+        small: 4,      // each dog year after 2 for small dogs ≈ 4 human years
+        medium: 5,     // medium ≈ 5
+        large: 6       // large ≈ 6
+      }
+    };
+
+    // Helper: query selectors
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+    // DOM elements
+    const mobileNavToggle = $('#mobile-nav-toggle');
+    const mobileNav = $('#mobile-nav');
+    const form = $('#calculator-form');
+    const dobInput = $('#dob');
+    const dobError = $('#dob-error');
+    const sizeError = $('#size-error');
+    const resultCard = $('#result-card');
+    const resultDogAge = $('#result-dog-age');
+    const resultHumanAge = $('#result-human-age');
+    const copyBtn = $('#copy-btn');
+    const shareBtn = $('#share-btn');
+    const copyFeedback = $('#copy-feedback');
+    const clearBtn = $('#clear-btn');
+
+    // Toggle mobile nav
+    mobileNavToggle?.addEventListener('click', () => {
+      const visible = !mobileNav.classList.contains('hidden');
+      if (visible) {
+        mobileNav.classList.add('hidden');
+        mobileNavToggle.setAttribute('aria-expanded', 'false');
+      } else {
+        mobileNav.classList.remove('hidden');
+        mobileNavToggle.setAttribute('aria-expanded', 'true');
+      }
+    });
+
+    // Utility: calculate difference in years (as decimal) between two dates
+    // Returns age in dog years as a decimal (e.g., 3.45)
+    function fractionalYearsBetween(fromDate, toDate) {
+      // We'll compute the difference in milliseconds, convert to days, then to years.
+      // This gives an approximate fractional year (accounting for leap years via 365.2425 average).
+      const msPerDay = 1000 * 60 * 60 * 24;
+      const avgDaysPerYear = 365.2425; // accounts for leap years on average
+      const diffMs = toDate - fromDate;
+      const days = diffMs / msPerDay;
+      return days / avgDaysPerYear;
+    }
+
+    // Calculation algorithm:
+    // - If dogAgeYears <= 1: scale proportionally to firstYear
+    // - Else if <= 2: firstYear + (dogAgeYears - 1) * secondYear
+    // - Else: firstYear + secondYear + (dogAgeYears - 2) * addYears[size]
+    // Comments: This is a commonly-used heuristic. Adjust AGE_RULES to tweak behavior.
+    function dogYearsToHuman(dogYears, size) {
+      if (dogYears <= 0) return 0;
+      const first = AGE_RULES.firstYear;
+      const second = AGE_RULES.secondYear;
+      const add = AGE_RULES.addYears[size] ?? AGE_RULES.addYears.medium;
+
+      if (dogYears <= 1) {
+        // Pro-rate the first year's value
+        return dogYears * first;
+      } else if (dogYears <= 2) {
+        // Full first year + proportion of second year
+        return first + (dogYears - 1) * second;
+      } else {
+        // First two years + remaining years scaled by size
+        return first + second + (dogYears - 2) * add;
+      }
+    }
+
+    // Format a fractional age (years as decimal) to "X years Y months"
+    function formatDogAge(yearsDecimal) {
+      const years = Math.floor(yearsDecimal);
+      const months = Math.round((yearsDecimal - years) * 12);
+      if (years <= 0 && months <= 0) return '0 months';
+      if (months === 0) return years + (years === 1 ? ' year' : ' years');
+      if (years === 0) return months + (months === 1 ? ' month' : ' months');
+      return `${years} ${years === 1 ? 'year' : 'years'} ${months} ${months === 1 ? 'month' : 'months'}`;
+    }
+
+    // Input validation
+    function validateInputs(dobValue) {
+      let ok = true;
+      dobError.textContent = '';
+      sizeError.textContent = '';
+
+      if (!dobValue) {
+        dobError.textContent = 'Please enter your dog\'s date of birth.';
+        ok = false;
+      } else {
+        const dob = new Date(dobValue + 'T00:00:00');
+        const today = new Date();
+        if (Number.isNaN(dob.getTime())) {
+          dobError.textContent = 'Invalid date format.';
+          ok = false;
+        } else if (dob > today) {
+          dobError.textContent = 'Date of birth cannot be in the future.';
+          ok = false;
+        } else {
+          // optional: minimum DOB check (e.g., too far in past unlikely)
+          const oldestReasonable = new Date();
+          oldestReasonable.setFullYear(oldestReasonable.getFullYear() - 30); // 30 years ago
+          if (dob < oldestReasonable) {
+            dobError.textContent = 'That date looks very old — please double-check.';
+            // keep ok = true here (just a warning), but if you want to block, set ok = false.
+          }
+        }
+      }
+
+      // Ensure a size is selected (one of the radios)
+      const size = document.querySelector('input[name="size"]:checked');
+      if (!size) {
+        sizeError.textContent = 'Please select a dog size.';
+        ok = false;
+      }
+
+      return ok;
+    }
+
+    // Main calculation handler
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      copyFeedback.textContent = '';
+      resultCard.classList.add('hidden');
+
+      const dobValue = dobInput.value;
+      const valid = validateInputs(dobValue);
+      if (!valid) return;
+
+      const size = (document.querySelector('input[name="size"]:checked') || {}).value || 'medium';
+      const dob = new Date(dobValue + 'T00:00:00');
+      const now = new Date();
+
+      // Compute dog's age in years (fractional)
+      const dogYears = fractionalYearsBetween(dob, now);
+
+      // Convert to human-equivalent using the algorithm
+      const humanYears = dogYearsToHuman(dogYears, size);
+
+      // Build display strings
+      const dogAgeText = `Dog age: ${formatDogAge(dogYears)}`;
+      // Round human years to 1 decimal for display; show approximate tilde
+      const humanRounded = Math.round(humanYears * 10) / 10;
+      const humanText = `Human age: ~${humanRounded} ${humanRounded === 1 ? 'year' : 'years'}`;
+
+      // Update result UI
+      resultDogAge.textContent = dogAgeText;
+      resultHumanAge.textContent = humanText;
+      resultCard.classList.remove('hidden');
+
+      // For screen
+// For screen readers, add a short announcement (aria-live handles it)
+      resultCard.focus?.();
+
+      // Save the last result data-attributes for copy/share
+      resultCard.dataset.result = `${dogAgeText} → ${humanText} (size: ${size})`;
+    });
+
+    // Copy-to-clipboard functionality
+    copyBtn.addEventListener('click', async () => {
+      const text = resultCard.dataset.result || `${resultDogAge.textContent} → ${resultHumanAge.textContent}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        copyFeedback.textContent = 'Result copied to clipboard.';
+      } catch (err) {
+        copyFeedback.textContent = 'Copy failed. You can manually select and copy the text.';
+      }
+    });
+
+    // Simple share handler: use navigator.share if available, otherwise fallback to copying
+    shareBtn.addEventListener('click', async () => {
+      const text = resultCard.dataset.result || `${resultDogAge.textContent} → ${resultHumanAge.textContent}`;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Dog Age Result',
+            text
+          });
+        } catch (err) {
+          copyFeedback.textContent = 'Share canceled or not available.';
+        }
+      } else {
+        try {
+          await navigator.clipboard.writeText(text);
+          copyFeedback.textContent = 'Share not supported — result copied to clipboard.';
+        } catch (err) {
+          copyFeedback.textContent = 'Share not supported and copy failed.';
+        }
+      }
+    });
+
+    // Clear form
+    clearBtn.addEventListener('click', () => {
+      form.reset();
+      dobError.textContent = '';
+      sizeError.textContent = '';
+      resultCard.classList.add('hidden');
+      copyFeedback.textContent = '';
+    });
+
+    // Keyboard accessibility: allow Enter to trigger calculate when focused in size fieldset radios
+    const sizeRadios = $$('input[name="size"]');
+    sizeRadios.forEach(radio => {
+      radio.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          radio.checked = true;
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    });
+
+    // Small enhancement: prefill DOB with a plausible sample (optional)
+    // Uncomment the following line to prefill for demo/testing:
+    // dobInput.value = '2019-06-15';
+
+    // END of script
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
