@@ -91,20 +91,12 @@ Note: This is a standalone single-file demo. In production, consider serving Tai
 </script>
   <!-- Tailwind CDN for quick prototype -->
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+      @theme {
+        --color-clifford: #da373d;
+      }
+    </style>
   </head>
-  <body>
-    <h1 class="text-3xl font-bold underline">
-      Hello world!
-    </h1>
-  </body>
-</html>
-02
-Try adding some custom CSS
-Use type="text/tailwindcss" to add custom CSS that supports all of Tailwind's CSS features.
-
-index.html
-
-<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
@@ -909,6 +901,7 @@ index.html
   </script>
 </body>
 </html>
+
 
 
 
